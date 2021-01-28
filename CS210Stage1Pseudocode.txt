@@ -1,0 +1,18 @@
+Main method:
+	Set loopCondition as true boolean
+	Set delimiters as string of delimiter characters
+	While loopCondition is true:
+		Print prompt
+		Declare userInput
+		Scan input from user as userInput
+		If detected during input
+			Set loopCondition to false
+			Exit loop
+		Set token as delimited string userInput with delimiter characters
+		If first token is 'exit'
+			Set loopCondition to false
+		Else
+			While token is not empty
+				Output next token content on new line
+				Set token to next character in delimited 
+	Print shell termination message
