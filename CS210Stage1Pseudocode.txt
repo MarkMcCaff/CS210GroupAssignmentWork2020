@@ -5,7 +5,7 @@ Main method:
 		Print prompt
 		Declare userInput
 		Scan input from user as userInput
-		If CTRL+C detected during input
+		If CTRL+D detected during input
 			Set loopCondition to false
 			Exit loop
 		Set token as delimited string userInput with delimiter characters
