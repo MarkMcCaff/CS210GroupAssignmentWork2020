@@ -1,0 +1,27 @@
+Tests to try with stage 1:
+Notes:
+- Each token should be printed on a single line enclosed by quotations or something similar
+- No seg faults should happen on termination
+- Specification says we should assume a maximum character length for reading lines i.e 512 characters
+
+Tests:
+1. Type a few words into a single line
+2. Type usual sentences over a few lines
+3. Type a sentence using only uppercase
+4. Type a mixture of lowercase and uppercase characters
+5. Type in a typical 'keyboard smash' and see how the shell does with it
+6. Just hit '<enter>' (no token input)
+7. Hit only '<enter>' over a few lines
+8. Go over the character limit
+9. Once the shell has dealt with that, go over the character limit again 
+10. Use only special characters on an input
+11. Mix special characters and ordinary words into a line
+12. Type 'exit' on its own
+13. Type 'exit' a few times
+14. Try '<ctrl>-D' on its own
+15. Try typing both 'exit' and '<ctrl>-D' on the same line  
+16. Try typing 'exit' at the end of a string input
+17. Try '<ctrl>-D' at the end of a string input
+18. Try '<ctrl>-D' at a random point of a string input
+19. Type in a few lines of sentences
+20. Do a random combination of the above multiple times to ensure the shell is unaffected after each
