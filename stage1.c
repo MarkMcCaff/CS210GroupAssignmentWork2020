@@ -2,27 +2,35 @@
 #include <string.h>
 
 int main(void) {
-   char delimiters[] =  " \t|><&;";
-   char *input; 
-   int loop = 1;
+	// set up delimiters for the program to look out for 
+	char delimiters[] =  " \t|><&;";
+	// input variable
+	char *input; 
+	// looping determinant
+	int loop = 1;
    
-   while (loop == 1) { 
-	   printf("$ ");
-	   gets(input);
-	   // Extract the first token
-	   char *token = strtok(input, delimiters);
-	   // loop through the string to extract all other tokens
-	   if (strcmp(token, "exit") == 0 || strcmp(token, "EXIT") == 0) {
+	// loops until the user has requested that the shell close
+	while (loop == 1) { 
+		// sets up the shell environment to get user's input
+		printf("$ ");
+		gets(input);
+		// Extracts the first token
+		char *token = strtok(input, delimiters);
+		// stops the program from continuing past this loop if the user wants to exit // 
+		if (strcmp(token, "exit") == 0 || strcmp(token, "EXIT") == 0) {
 			loop = 0;
 		} 
+		// otheriwse, prints all of the tokens present
 		else {
 			while (token != NULL) {
 				printf("'%s\' ", token);
 				token = strtok(NULL, delimiters);
 			}
 		}
+		// sets up a new line for the next input
 		printf("\n");
-   }
-   printf("Terminating shell...\n");
-   return 0;
+	}
+	// notifies the user that the shell is closing
+	printf("Terminating shell...\n");
+	return 0;
 }
