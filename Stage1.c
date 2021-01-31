@@ -5,67 +5,96 @@
 #include <stdlib.h>
 #include <signal.h>
 
+
 //initalise shell we don't really need it 
 void init (){
-    printf("SHELL STAGE 1");
+    printf("------SHELL STAGE 1------");
 }
 
 //get current dir may come handy later 
 void currentDir(){
 
+    char* user = getenv("USER");
+
     char cwd[PATH_MAX];
     //getcwd function get current working dir
     getcwd(cwd,sizeof(cwd));
     //print to prompt 
-    printf("\nDir: %s", cwd);
+    printf("\n%s : %s $ ", user,cwd);
 }
 
-// read user input and phase user input then return an array of token to be handled (may break it into two function later)
-char** getInput(){
+// read user input and return the input
+char* getInput(){
+
+    //Declare userInput
+    char* input;
+    input = (char*)malloc(512);
+
+    //Scan input from user as userInput
+    //If CTRL+D detected during input
+    if (!fgets(input, 512, stdin)){
+
+        //Exit loop
+    
+        printf(">>> exit shell \n");
+            exit(0);
+    }
+
+    return input;
+}
+
+//parse the input to an array of strings then return it
+char** parseInput(char* input){
+
+    //printf("%s",input);
 
     //Set delimiters as string of delimiter characters
     char delimiters[] = " \t|><&;";
 
-    //Declare userInput
-    char* input;
-    //Scan input from user as userInput
-    get(input);
+    //set up the array 
+    char ** arrToken = malloc(200*sizeof(char*)); 
 
-    //If CTRL+D detected during input
-			//Set loopCondition to false
-			//Exit loop
+    //set up counter
+    int i = 0;
+
     
     //Set token as delimited string userInput with delimiter characters
-    char** token = strtok(input, delimiters);
+    char* token = strtok(input, delimiters);
+
+    //place the rest of part onto array 
+    while( token!= NULL){
+        arrToken[i]= token;
+
+        token = strtok(NULL, delimiters);
+        i++;
+    }
+    
+    
 
     // return the array of tokens to be handled 
-    return token;
+    return arrToken;
 
 }
 
 
 //handle cmd base on tokens 
-int cmdHandle (char** token){
+void cmdHandle (char** token){
 
-    
-    char* cmd = token[0];
+    //set string cmd to be the first pointer of the array
+    char* cmd = *token;
 
-    //If first token is 'exit' or 'EXIT' 
-    if (strcmp(cmd, 'exit')==0 || strcmp(cmd, 'EXIT'==0)){
+    //still need to be fixed 
+    char* paramter = token[1];
 
-        //Set loopCondition to false
-        return 0;
+    //If first token is 'exit' or exit with space, then exit the shell
+    if (strcmp(cmd, "exit\n")==0||strcmp(cmd,"exit")==0){
+        printf(">>> exit shell \n");
+        exit(0);
 
     }else{
-        //While token is not empty
-        while (token != Null){
-
-            //Output next token content on new line
-            printf("'%s\' ", token);
-            //Set token to next character in delimited 
-			
-
-        }
+        
+        //else print the paramter(later to be changed, paramter need to be processed)
+        printf(">>> %s ", paramter);
     }
 
 }
@@ -81,13 +110,8 @@ int main (void){
 
         currentDir();
         
-        printf("$ ");
-        char * token = getInput();
-
-        if (cmdHandle(token)==0){
-            printf("exit shell\n");
-            exit(0);
-        }
+        //cmd handle take parse input as input and parse input take get input as input 
+        cmdHandle(parseInput(getInput()));
 
     }
     return 0;
