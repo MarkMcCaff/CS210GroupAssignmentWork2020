@@ -26,10 +26,10 @@ int main(void){
 			else{
 			strtok(input, "\n");
 	
-			pch = strtok (input," \t,|><%;");
+			pch = strtok (input," \t,|><&;");
 			while(pch != NULL){
 				 printf ("%s\n",pch);
-				 pch = strtok (NULL, " \t,|><%;");
+				 pch = strtok (NULL, " \t,|><&;");
 			}
 			}
 			
