@@ -1,0 +1,31 @@
+Main function:		
+	Display welcome message
+	Declare input string
+	Declare strtok holder
+	While user is prompted for input:
+		Declare fixed size array of tokens - size 50
+		Display user input
+		Obtain input string from user input 
+		If end-of-file detected (ctrl+d pressed):
+			Exit shell
+		If user input is "exit":
+			Exit shell
+		Else 
+			Eliminate trailing enter from user input
+			Tokenise Strings from user input using set of delimiters
+			While token string exits
+				Add token string to array of tokens
+				Select next token
+			If first token is execute command:
+				If second token not found:
+					Display error message
+				Construct dynamic-size array of strings holding parameters
+				While 3rd token or after not yet found by program:
+					Add token as element to parameter array
+				Call Execution function while passing program name (2nd item from token array) and array of parameters
+	Return 0 for main function return value
+	
+
+
+Execution function (parameters: program name; program parameters):
+	
