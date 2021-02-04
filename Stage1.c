@@ -69,12 +69,16 @@ char** parseInput(char* input){
         i++;
     }
     
+
     
 
     // return the array of tokens to be handled 
     return arrToken;
 
 }
+
+
+
 
 
 //handle cmd base on tokens 
@@ -104,6 +108,8 @@ void cmdHandle (char** token){
 int main (void){
 
     init();
+
+    printf("HEllo world");
 
 
     while (1){
