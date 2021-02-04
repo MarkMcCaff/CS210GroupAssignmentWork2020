@@ -29,9 +29,10 @@ void part1(){
 			printf("+");
 			
 			//Control D
-			if(!fgets(input, 512, stdin)){
+			fgets(input, 512, stdin); 
+			if(feof(stdin)){
 				
-			break;
+				break;
 			}
 			//Will break when u type "exit"
 			else if(strcmp(input,"exit\n") == 0){
