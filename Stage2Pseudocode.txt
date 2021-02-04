@@ -23,9 +23,22 @@ Main function:
 				While 3rd token or after not yet found by program:
 					Add token as element to parameter array
 				Call Execution function while passing program name (2nd item from token array) and array of parameters
+			Else
+				Display "command not found" error
 	Return 0 for main function return value
 	
 
 
 Execution function (parameters: program name; program parameters):
+	Declare process identifier
+	Fork child process into process identifier
+	If process identifier is less than 0
+		Display error message
+	If process identifier is 0
+		Execute file with parameters (function accounts for PATH environment parameters)
+		If file fails to load
+			Display error message
+	Else
+		Wait for child process to complete
+	
 	
