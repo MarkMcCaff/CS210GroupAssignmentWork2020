@@ -13,6 +13,7 @@
     void cmdHandle();
 	char** part1();
     void process();
+    void extProcess();
 	
 int main(void){
 
@@ -64,7 +65,7 @@ void cmdHandle (char** tokens){
 
     //for loop to check for which command
     for (int i = 0;  i < 5; i++){
-        if (strcmp(cmd, cmdList[i])==0){
+        if (strcmp(cmd, cmdList[i])==0||strstr(cmd, "./")!=NULL){
             cmdID = i + 1;
             break;
         }
@@ -152,6 +153,31 @@ void process(char ** token){
         //no error occured put child process to wait (that is the end od that child process)
         wait(NULL);
         //printf("child done ");
+        return;
+    }
+
+}
+
+// ./stage1 sule jack mic scot mark \0
+
+
+void extProcess(const char **tokens){
+
+    
+
+    pid_t pid = fork();
+
+    if (pid < 0){
+        perror("failed to create processssssssssss");
+    }else if(pid == 0){
+
+        if(execve(tokens[0],(char**)tokens, NULL)<0){
+
+            perror("-> failed to excute");
+        }
+    }else{
+
+        wait(NULL);
         return;
     }
 
