@@ -65,20 +65,27 @@ void cmdHandle (char** tokens){
 
     //for loop to check for which command
     for (int i = 0;  i < 5; i++){
-        if (strcmp(cmd, cmdList[i])==0||strstr(cmd, "./")!=NULL){
+        if (strcmp(cmd, cmdList[i])==0){
             cmdID = i + 1;
             break;
+        }else if(strstr(cmd, "./")!=NULL){
+
+            cmdID = 6;
+            break;
+
         }
     }
 
 
     switch(cmdID){
 
+        
+
         //exit shell terminates 
         case 1 :
             printf("-> exit shell \n");
             exit(0);
-            break;
+        break;
         
         //ls prcoss cmd
         case 2 :
@@ -90,8 +97,6 @@ void cmdHandle (char** tokens){
 
         // cd change directry 
         case 3 :
-
-            
             //run chdir function and check for return  
             if(chdir(para)!=0){
 
@@ -116,6 +121,11 @@ void cmdHandle (char** tokens){
 
             process(tokens);
 
+        break;
+
+        case 6:
+            extProcess(tokens);
+            //printf("external process");
         break;
 
         //if none of these cmd has been entered then print error statement
@@ -158,12 +168,8 @@ void process(char ** token){
 
 }
 
-// ./stage1 sule jack mic scot mark \0
-
 
 void extProcess(const char **tokens){
-
-    
 
     pid_t pid = fork();
 
@@ -175,6 +181,7 @@ void extProcess(const char **tokens){
 
             perror("-> failed to excute");
         }
+        exit(0);
     }else{
 
         wait(NULL);
@@ -182,8 +189,6 @@ void extProcess(const char **tokens){
     }
 
 }
-	
-	
 	
 	
 char** part1(){
@@ -225,3 +230,4 @@ char** part1(){
     return arrToken;	 	
 	
 }
+
