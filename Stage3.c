@@ -17,10 +17,10 @@
 	
 int main(void){
 
-    //Save original directory
-    char* originalPath = getenv("PATH");
+    // saving the path into a variable
+    char* savedPath = getenv("PATH");
 
-    //Set current directory to HOME
+    // set current directory to home
     chdir(getenv("HOME"));
 
     // propomt init message 
@@ -31,15 +31,14 @@ int main(void){
 
         // take input and handle the cmd
         cmdHandle(part1());
-        
-
 
     }
-        //Restore original directory
-        setenv("PATH", originalPath, 1);
 
-		//return main 
-		return 0;
+    // restore the original path before closing    
+    setenv("PATH", savedPath, 1);
+		
+	//return main 
+	return 0;
 		
 }
 
@@ -61,7 +60,7 @@ void cmdHandle (char** tokens){
     char* cmd =  *tokens;
     int cmdID = 0;
     char* para = tokens[1];
-    char* cmdList[7];
+    char* cmdList[5];
 
     //list of possible input, subject to change
     cmdList[0] = "exit";
@@ -74,20 +73,27 @@ void cmdHandle (char** tokens){
 
     //for loop to check for which command
     for (int i = 0;  i < 7; i++){
-        if (strcmp(cmd, cmdList[i])==0||strstr(cmd, "./")!=NULL){
+        if (strcmp(cmd, cmdList[i])==0){
             cmdID = i + 1;
             break;
+        }else if(strstr(cmd, "./")!=NULL){
+
+            cmdID = 8;
+            break;
+
         }
     }
 
 
     switch(cmdID){
 
+        
+
         //exit shell terminates 
         case 1 :
             printf("-> exit shell \n");
             exit(0);
-            break;
+        break;
         
         //ls prcoss cmd
         case 2 :
@@ -99,8 +105,6 @@ void cmdHandle (char** tokens){
 
         // cd change directry 
         case 3 :
-
-            
             //run chdir function and check for return  
             if(chdir(para)!=0){
 
@@ -123,9 +127,35 @@ void cmdHandle (char** tokens){
 
         case 5:
 
-            process(tokens);
+            currentDir();
+            //process(tokens);
 
         break;
+
+        case 6:
+
+            currentPath();
+
+        break;
+
+        case 7:
+
+            if (para == NULL) {
+                printf("-> path could not be set: no address");            
+            }
+            else if (setenv("PATH", para, 1) != 0) {
+                printf("-> path could not be set: bad address");
+            }
+        
+        break;
+
+        case 8:
+        
+            extProcess(tokens);
+            //printf("external process");
+        
+        break;
+
 
         //if none of these cmd has been entered then print error statement
         default:
@@ -167,12 +197,8 @@ void process(char ** token){
 
 }
 
-// ./stage1 sule jack mic scot mark \0
-
 
 void extProcess(const char **tokens){
-
-    
 
     pid_t pid = fork();
 
@@ -184,6 +210,7 @@ void extProcess(const char **tokens){
 
             perror("-> failed to excute");
         }
+        exit(0);
     }else{
 
         wait(NULL);
@@ -191,8 +218,6 @@ void extProcess(const char **tokens){
     }
 
 }
-	
-	
 	
 	
 char** part1(){
@@ -235,10 +260,9 @@ char** part1(){
 	
 }
 
-char* getPath() {
+void currentPath() {
 
-}
-
-void setPath() {
+    char* savedPath = getenv("PATH");
+    printf("%s\n", savedPath);
 
 }
