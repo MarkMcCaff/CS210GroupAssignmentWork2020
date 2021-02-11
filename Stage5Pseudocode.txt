@@ -1,0 +1,29 @@
+Additional code within main function:
+	At start:
+		Declare Array of String size 20 as commandHistory 
+	On cmdHandle(part1()) function call:
+		pass commandHistory to cmdHandle
+
+Add command routine (within "cmdHandle" function):
+	If non-'!' function (valid or non-valid) called:
+		for items i in commandHistory from 19 to 1 do:
+			set commandHistory i to commandHistory i+1
+		Set commandHistory 0 to tokens
+		
+Execute history list routine (within "cmdHandle" function):
+	If command is "history":
+		for items i in commandHistory from 0 to 19 do:
+			print i + 1 and contents of commandHistory i
+		(note: do not add "history" to commandHistory array)
+	
+Execute previous command routine (within "cmdHandle" function):
+	If user input first character is '!':
+		If remaining characters is number 1 to 20:
+			Use command at commandHistory input-1 for process
+		Else if remaining characters are -(number 1 to 20):
+			Use command at commandHistory 20-input for process
+		Else if remaining character is '!':
+			Use command at commandHistory 0 for process
+		Else
+			Present error message
+
