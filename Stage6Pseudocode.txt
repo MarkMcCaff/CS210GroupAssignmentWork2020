@@ -1,0 +1,37 @@
+General notes on completing stage 6:
+-Array holding command history would be declared in main function, where the contents from the file will be loaded immediately after, before the main loop starts.
+-Save function should be done at very end of main function, so we do not redundantly write code on saving list content more than once.
+-File should be saved in format similar to below, having 20 lines:
+	1. First command
+	2. Second command
+	etc.
+
+Function to load file contents (returns array of commands):
+	Set file as ".hist_list" file
+	Set maximum size of file
+	Set file pointer to opening file in read mode
+	If file not detected:
+		Return null
+	While file pointer is not null when reading file contents:
+		Read past number at line
+		Save text remaining in line of text to command history
+		Move to next line
+	Close file pointer
+	return command history
+
+Function to save file contents (returns integer, parameter: array of commands):
+	Set file pointer to text file in write mode
+	If file pointer is NULL:
+		Present error message
+		return -1
+	Set index as 0
+	While command history contents still to be written:
+		Increment index
+		Add to file: <index>. <Next command history item>
+	Set j as index
+	While j is less than 20:
+		Increment j
+		Add to file: <j>.
+	Close file pointer
+	Return index
+		
