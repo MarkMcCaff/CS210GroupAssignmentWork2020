@@ -14,11 +14,13 @@ char** part1();
 void process();
 void extProcess();
 void currentPath();
+void setPath();
 	
 int main(void){
 
     // saving the path into a variable
-    char* savedPath = getenv("PATH");
+    char savedPath[512];
+    strcpy(savedPath,getenv("PATH"));
 
     // set current directory to home
     chdir(getenv("HOME"));
@@ -30,13 +32,10 @@ int main(void){
     while (1){
 
         // take input and handle the cmd
-        cmdHandle(part1());
-        
+        cmdHandle(part1(savedPath),savedPath);
+                                                                                                                                                                                                                         
     }
 	
-    // restore the original path before closing    
-    setenv("PATH", savedPath, 1);
-
     //return main 
     return 0;
 		
@@ -55,7 +54,7 @@ void currentDir(){
 }
 
 //the tokenised input
-void cmdHandle (char** tokens){
+void cmdHandle (char** tokens, char* path){
 
     char* cmd =  *tokens;
     int cmdID = 0;
@@ -64,23 +63,16 @@ void cmdHandle (char** tokens){
 
     //list of possible input, subject to change
     cmdList[0] = "exit";
-    cmdList[1] = "ls";
-    cmdList[2] = "cd";
-    cmdList[3] = "help";
-    cmdList[4] = "pwd";
-    cmdList[5] = "getpath";
-    cmdList[6] = "setpath";
+    cmdList[1] = "cd";
+    cmdList[2] = "help";
+    cmdList[3] = "getpath";
+    cmdList[4] = "setpath";
 
     //for loop to check for which command
-    for (int i = 0;  i < 7; i++){
+    for (int i = 0;  i < 6; i++){
         if (strcmp(cmd, cmdList[i])==0){
             cmdID = i + 1;
             break;
-        }else if(strstr(cmd, "./")!=NULL){
-
-            cmdID = 8;
-            break;
-
         }
     }
 
@@ -89,20 +81,15 @@ void cmdHandle (char** tokens){
 
         //exit shell terminates 
         case 1 :
+            // restore the original path before closing   
+            setenv("PATH", path, 1);
+            currentPath();
             printf("-> exit shell \n");
             exit(0);
         break;
         
-        //ls process cmd
-        case 2 :
-
-            //printf("->this is ls cmd");
-            process(tokens);
-        
-        break;
-
         // cd change directry 
-        case 3 :
+        case 2 :
 
             if (para==NULL){
 
@@ -111,11 +98,19 @@ void cmdHandle (char** tokens){
                 chdir(getenv("HOME"));
             
             //run chdir function and check for return  
+            }else if(tokens[2]!=0){
+
+                printf("-> you can only enter one path");
+
             }else if(chdir(para)!=0){
 
                 //failed - print error statement
-                perror ("-> failed change directory");
+                fprintf(stderr,"-> failed to cd, an error occured with [%s]: ", para);
+                perror ("");
 
+                
+
+            
             }else{
 
                 // worked print the current working directory
@@ -125,46 +120,36 @@ void cmdHandle (char** tokens){
         break;
 
         //help just for testing, can be change to something more useful
-        case 4 :
+        case 3:
 
             printf("-> SOS");
         
         break;
 
+        case 4:
+
+            if(para!= NULL){
+                printf("-> you don't need to enter a path");
+            }else{
+                currentPath();
+            }
+
+            
+
+        break;
+
         case 5:
 
-            currentDir();
-            //process(tokens);
-
-        break;
-
-        case 6:
-
-            currentPath();
-
-        break;
-
-        case 7:
-
-            if (para == NULL) {
-                printf("-> path could not be set: no address");            
-            }
-            else if (setenv("PATH", para, 1) != 0) {
-                printf("-> path could not be set: bad address");
-            }
-        
-        break;
-
-        case 8:
-        
-            extProcess(tokens);
-            //printf("external process");
+            setPath(tokens);
         
         break;
 
         //if none of these cmd has been entered then print error statement
         default:
-            printf("[Sorry this command can not be recognised.] \n[Please check your input.]\n");
+
+            //printf("->this is ls cmd");
+            process(tokens);
+            //printf("[Sorry this command can not be recognised.] \n[Please check your input.]\n");
 
 
     }
@@ -187,45 +172,28 @@ void process(char ** token){
         // excute the cmd with it's arug, then check for errors
         if(execvp(token[0],token)<0){
 
+            
             //error occured print errMsg
-            perror("-> failed to excute");
+            fprintf(stderr,"-> [%s]: ", token[0]);
+            perror ("");
+
+            
+            exit(1);
         }
         //kill the process
-        exit(0);
+        //exit(EXIT_FAILURE);
     }else{
         
         //no error occured put child process to wait (that is the end od that child process)
         wait(NULL);
-        //printf("child done ");
         return;
     }
 
 }
 
 
-void extProcess(const char **tokens){
-
-    pid_t pid = fork();
-
-    if (pid < 0){
-        perror("failed to create processssssssssss");
-    }else if(pid == 0){
-
-        if(execve(tokens[0],(char**)tokens, NULL)<0){
-
-            perror("-> failed to excute");
-        }
-        exit(0);
-    }else{
-
-        wait(NULL);
-        return;
-    }
-
-}
 	
-	
-char** part1(){
+char** part1(char* path){
 
     char input[512];
     char** arrToken = malloc(50 * sizeof(char*));
@@ -240,6 +208,9 @@ char** part1(){
 
 	if(feof(stdin)){
 
+        // restore the original path before closing   
+        setenv("PATH", path, 1);
+        currentPath();
         printf("\n-> exit shell \n");
         exit(0);
 			
@@ -270,4 +241,17 @@ void currentPath() {
     char* savedPath = getenv("PATH");
     printf("%s\n", savedPath);
 
+}
+
+void setPath(char** token){
+
+    if (token[1] == NULL) {
+        printf("-> path could not be set: no address");            
+    }else if (token[2] != NULL){
+        printf("-> you can only enter one path");
+    }else if (setenv("PATH", token[1], 1) != 0) {
+        printf("-> path could not be set: bad address");
+    }else{
+        currentPath();
+    }
 }
