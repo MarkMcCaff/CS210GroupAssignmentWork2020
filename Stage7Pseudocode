@@ -1,0 +1,41 @@
+Add an alias function (char *name, char *command):
+    If less than 2 parameters passed to function:
+        Display error message that user should have alias name and command
+    Else if alias count is 10:
+        Display message that no more aliases can be added.
+    Else:
+        For each row of 2D alias array, until an update has been made:
+            If row of array is empty:
+                Set item at first row of column to alias name (first token from user input)
+                Set item at second row of column to alias command (rest of text from user input)
+            Else if row of array contains same name as new alias name:
+                Set item at first row of column to alias name (first token from user input)
+                Set item at second row of column to alias command (rest of text from user input)
+                Display message that alias has been overriden
+
+Remove an alias function (char *name):
+    If parameter not passed in function:
+        Display error message that user should have alias name
+    Else if more than one parameter passed:
+        Display error message that user only needs one parameter
+    Else
+        For all columns of 2D alias array until update is made or end reached:
+            If first row at this column of array matches parameter name:
+                Remove contents in both rows for this column
+                For all succeeding columns in 2D array until space or empty column reached:
+                Shift all columns back by one until their previous column is non-empty
+        If alias passed has not been removed:
+            Display message that no such alias command exists
+
+Invoking an alias (code in function where commands are processed):
+    (When function is first accessed after user input is made:)
+    For all nonempty columns of 2D alias array:
+        If alias name in the column matches the user input:
+            Replace user input variable for rest of function with command specified in row of current column
+
+Printing an Alias function ():
+    If all columns of 2D alias array are empty:
+        Display message saying this is the case
+    Else:
+        For all nonempty columns of 2D alias array:
+            Print alias name to Screen
