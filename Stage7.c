@@ -3,27 +3,23 @@
 // test 
 // 
 // Created by SULEMAN AKHTER on 25/01/2021.
+// Modified by Jackson Blair
+// Error exists - everything
 //
 
-#include <header.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#include "header.h"
 
 //C function interface
 void currentDir();
 void cmdHandle();
+char* input();
 char** part1();
 void process();
 void extProcess();
 void currentPath();
 void setPath();
 void cmdHistory();
+void historyHandle();
 void addAlias();
 void removeAlias();
 void printAlias();
@@ -49,8 +45,18 @@ int main(void) {
 	// pronpt loop while true until exit exit(0)
 	while (1){
 	
+		// take input
+		
+		char *userInput = input(savedPath);
+		//printf("%s\n", userInput);
+		
+		//tokenize the input
+		char** tokenizedInput = tokenize(userInput);
+		// DO NOT EDIT OR DELETE THIS LINE FOR NOW
+		printf("%s\n", tokenizedInput[0]);
+	
 		// take input and handle the cmd
-		cmdHandle(part1(savedPath),savedPath);
+		cmdHandle(part1(savedPath),savedPath, alias, aliasCount);
 		
 	}
 	
@@ -72,32 +78,18 @@ void currentDir(){
 }
 
 //the tokenised input
-void cmdHandle (char** tokens, char* path) {
+void cmdHandle (char** tokens, char* path, char* alias[][], int aliasCount) {
 
 	char* cmd = *tokens;
 	int cmdID = 0;
 	char* para = tokens[1];
-	char* cmdList[6];
-	int empty;
-	char** history = malloc(20 * sizeof(char*));
-	char** tempHistory = malloc(20 * sizeof(char*));
-	tempHistory[0] = "I hate Mac";
-	tempHistory[1] = "I hate Pointers";
+	char* cmdList[8];
 	
-    //Check aliasing: if text is equal to alias, set it.
 	for (int i = 0; i < 10; i++) {
 		if (*tokens == alias[i][0]) {
 			tokens = alias[i][1];
 			break;
 		}	
-	}
-	
-	
-	for (int i = 0; i < 2; i++) {
-	
-	
-		//printf(*tempHistory);
-		
 	}
 	
 	// Checks for an empty index
@@ -127,12 +119,12 @@ void cmdHandle (char** tokens, char* path) {
 	cmdList[3] = "help";
 	cmdList[4] = "getpath";
 	cmdList[5] = "setpath";
-	cmdList[6] = "alias"
+	cmdList[6] = "alias";
 	cmdList[7] = "unalias";
 	
 	
 	//for loop to check which command
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < 9; i++) {
 		if (strcmp(cmd, cmdList[i])==0) {
 			cmdID = i + 1;
 			break;
@@ -154,9 +146,8 @@ void cmdHandle (char** tokens, char* path) {
 		break;
 		
 		case 2:
-			//[["!b'],[abc]]
-			
-			
+		
+			historyHandle(para,path);
 			intP = atoi(para);
 			if(para != NULL && intP > 0 && intP < 21) {
 				printf("%s \n" ,para);
@@ -191,9 +182,6 @@ void cmdHandle (char** tokens, char* path) {
 				fprintf(stderr,"-> failed to cd, an error occured with [%s]: ", para);
 				perror ("");
 				
-			
-			
-			
 			}else{
 			
 				// worked print the current working directory
@@ -208,6 +196,7 @@ void cmdHandle (char** tokens, char* path) {
 			
 		break;
 		
+		//getpath
 		case 5:
 		
 			if(para!=NULL){
@@ -216,38 +205,42 @@ void cmdHandle (char** tokens, char* path) {
 				currentPath();
 			}
 			
-			
-			
-			
 		break;
 		
+		//setPath(tokens)
 		case 6:
 		
 			setPath(tokens);
 			
 		break;
 		
-        case 7:
-
-            if (para != NULL) {
-                printAlias();
-            } else if (tokens[2] != NULL) {
-                addAlias(token[1], **token[2]);
-            } else {
-                printf("-> to use alias function, specify a name and command, or only use word \"alias\"");
-            }
-
-        break;
-
-        case 8:
-
-                if (tokens[1] != NULL && tokens[2] == NULL) {
-                    removeAlias(tokens[1]);
-                } else {
-                    printf("-> to use unAlias function, specify the name of an existing alias");
-                }
-
-        break;
+		//alias
+		case 7:
+		
+			if (para == NULL) {
+				printAlias(alias, aliasCount);
+			} else if (tokens[2]!= NULL) {
+				addAlias(tokens[0], **tokens + 1, alias, aliasCount);
+			} else {
+				printf("-> to use alias function, specify a name and command, or only use word \"alias\"\n");
+			}
+		
+		break;
+		
+		//unalias
+		case 8:
+		
+			if (para == NULL) {
+				printf("-> Please specify an existing alias name to remove it\n");
+			} else if (tokens[1] != NULL && tokens[2] == NULL) {
+				unalias(tokens[1], alias, aliasCount);
+			} else if (tokens[2] != NULL) {
+				printf("-> You should only enter one alias name");
+			}
+		
+		break;
+		
+		
 		
 		//if none of these cmd has been entered then print error statement
 		default:
@@ -341,6 +334,82 @@ char** part1(char* path){
 
 }
 
+void cmdHistory(char* input){
+
+	for(int i = 0; i < 20; i++) {
+	
+		if (history[i] == NULL) {
+			history[i] = input;
+			//printf("-> current cmd is %s \n", history[i]);
+			//printf("-> current cmd pos is %d \n", i);
+			break;
+		}
+	
+	}
+	
+}
+
+void historyHandle(char* para, char* path, char** alias[][], int  aliasCount) {
+
+	printf("%s\n",para);
+	
+	int i = 0;
+	i = atoi(para);
+	
+	if(i > 0 && i < 21) 
+	
+		if(history[i - 1] != NULL){
+		
+			char** tInput = tokenize(hisotry[i - 1]);
+			
+			//DO NOT DELETE THIS LINE CODE IS BASED ON THIS TO RUN
+			printf("%s\n", tInput[0]);
+			
+			//handling the tokenized input
+			cmdHandle(tInput,path, alias, aliasCount);
+		
+		} else {
+			//printf("-> sorry, command not found ");
+		}
+	} else {
+		printf("-> Sorry history only stores last 20 command");
+	}
+
+//process function take in tokenised input the create process, execute the return the process
+void process(char** token) {
+
+	//declare pid and create child process
+	pid)t pid = fork();
+	
+	//if we can't create child process failed
+	if(pid < 0){
+		//print error msg
+		perror("-> failed to create process");
+		return;
+		
+	//if we can create a child process
+	}else if (pid == 0) {
+		// execute the cmd with it's arg, then check for errors
+		if(execvp(token[0],token)<0){
+		
+		
+			//error occured print errMsg
+			fprintf(stderr,"-> [%s]: ", token[0]);
+			perror ("");
+			
+			
+			exit(1);
+		}
+		//kill the process
+		//exit(EXIT_FAILURE);
+	}else{
+		
+		//no error occured but child process to wait (that is the end of that child process)
+		wait(NULL);
+		return;
+	}
+}
+
 void currentPath() {
 
 	char* savedPath = getenv("PATH");
@@ -361,7 +430,7 @@ void setPath(char** token) {
 	}
 	
 	//function to add a new alias
-	void addAlias(char* name, char** command){
+	void addAlias(char* name, char** command, char* alias[][], int aliasCount){
 		if (name != NULL || command != NULL) {
 			printf("-> input the name and command for the new alias");
 		} else if (aliasCount == 10) {
@@ -385,7 +454,7 @@ void setPath(char** token) {
 	}
 	
 	//funtion to remove an aliased command from the list
-	void removeAlias(char* name){
+	void removeAlias(char* name, char* alias[][], int aliasCount){
 		if (name == NULL) {
 			printf("-> input the name of the alias you are removing");
 		} else {
@@ -402,7 +471,7 @@ void setPath(char** token) {
 	}
 	
 	//Function to print all currently set aliases to the screen
-	void printAlias(){
+	void printAlias(char* alias[][], int aliasCount){
 		//If there are no aliases set, display a message
 		if (aliasCount == 0) {
 			printf("There are no aliases set");
@@ -415,3 +484,5 @@ void setPath(char** token) {
 				}
 			}
 		}
+	}
+}
