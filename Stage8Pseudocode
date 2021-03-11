@@ -1,0 +1,5 @@
+Guide on how to do stage 8 of simple shell:
+-The handling of aliases throughout the entire file should be equivalent to that of handling the command history (e.g. load at beginning of "main" method, save at end of "main" method, declare list in main method and pass to any other method that uses it).
+-The file format, for each alias saved, should appear in the following format:
+    alias <AliasName> "<AliasCommand>"
+-The functions used for saving and loading a file of aliases should be identical to that of stage 6, though depending on circumstances, some changes in formatting may need to be changed.
