@@ -1,0 +1,2 @@
+Notes on completing stage 9:
+-For replacing the command token to alias aliases, use a while loop that checks the current command (that should be set to the next alias if it is aliased before) is not one of the alias names currently set in the program. This should be done in the preexisting section where the alias is defined.
