@@ -89,11 +89,16 @@ void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
 	char* para = tokens[1];
 	char* cmdList[8];
 	
-	for (int i = 0; i < 10; i++) {
-		if (*tokens == alias[i][0]) {
-			tokens = alias[i][1];
-			break;
-		}	
+	//Allow aliases to alias other aliases, loop until we know the command is not an alias:
+	int notAlias = 0;
+	while (notAlias = 0) {
+		notAlias = 1;
+		for (int i = 0; i < 10; i++) {
+			if (*tokens == alias[i][0]) {
+				tokens = alias[i][1];
+				notAlias = 0;
+			}	
+		}
 	}
 	
 	// should be holding the history commands
