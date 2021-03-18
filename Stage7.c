@@ -29,6 +29,10 @@ int main(void) {
 
 	//Construct a 2D array of strings to hold alias names and commands
 	char* alias[10][2];
+	/*char* alias[10][2] = malloc(sizeof(char*) * 10);
+	for (int i = 0; i < 10; i++) {
+		alias[i] = malloc(sizeof(char*) * 2);
+	}*/
 	//Hold the number of aliases currently held in the shell
 	int aliasCount = 0;
 
@@ -78,7 +82,7 @@ void currentDir(){
 }
 
 //the tokenised input
-void cmdHandle (char** tokens, char* path, char* alias[][], int aliasCount) {
+void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
 
 	char* cmd = *tokens;
 	int cmdID = 0;
@@ -90,21 +94,6 @@ void cmdHandle (char** tokens, char* path, char* alias[][], int aliasCount) {
 			tokens = alias[i][1];
 			break;
 		}	
-	}
-	
-	// Checks for an empty index
-	for(int i = 0; i<20; i++) {
-	
-		if (history[i] == NULL) {
-		
-			empty = i;
-			break;
-			
-		}
-		
-	}
-	if(strcmp(tokens[0],"!")){
-		history[empty] = *tokens;
 	}
 	
 	// should be holding the history commands
@@ -131,8 +120,8 @@ void cmdHandle (char** tokens, char* path, char* alias[][], int aliasCount) {
 		}
 	}
 	
-	int intP;
-	
+	//Variable unused in current program. Purpose unknown
+	//int intP;
 	
 	switch(cmdID) {
 	
@@ -147,20 +136,9 @@ void cmdHandle (char** tokens, char* path, char* alias[][], int aliasCount) {
 		
 		case 2:
 		
-			historyHandle(para,path);
-			intP = atoi(para);
-			if(para != NULL && intP > 0 && intP < 21) {
-				printf("%s \n" ,para);
-				printf("%s \n" ,*history[intP - 1]);
-			}else{
-				printf("-< Sorry history only stores last 20 command");
-			}
-			
-			
-			
-			break;
-			
-			
+			//History involved functions go here
+				
+		break;
 			
 		// cd change directory
 		case 3:
@@ -233,7 +211,7 @@ void cmdHandle (char** tokens, char* path, char* alias[][], int aliasCount) {
 			if (para == NULL) {
 				printf("-> Please specify an existing alias name to remove it\n");
 			} else if (tokens[1] != NULL && tokens[2] == NULL) {
-				unalias(tokens[1], alias, aliasCount);
+				removeAlias(tokens[1], alias, aliasCount);
 			} else if (tokens[2] != NULL) {
 				printf("-> You should only enter one alias name");
 			}
@@ -334,47 +312,7 @@ char** part1(char* path){
 
 }
 
-void cmdHistory(char* input){
-
-	for(int i = 0; i < 20; i++) {
-	
-		if (history[i] == NULL) {
-			history[i] = input;
-			//printf("-> current cmd is %s \n", history[i]);
-			//printf("-> current cmd pos is %d \n", i);
-			break;
-		}
-	
-	}
-	
-}
-
-void historyHandle(char* para, char* path, char** alias[][], int  aliasCount) {
-
-	printf("%s\n",para);
-	
-	int i = 0;
-	i = atoi(para);
-	
-	if(i > 0 && i < 21) 
-	
-		if(history[i - 1] != NULL){
-		
-			char** tInput = tokenize(hisotry[i - 1]);
-			
-			//DO NOT DELETE THIS LINE CODE IS BASED ON THIS TO RUN
-			printf("%s\n", tInput[0]);
-			
-			//handling the tokenized input
-			cmdHandle(tInput,path, alias, aliasCount);
-		
-		} else {
-			//printf("-> sorry, command not found ");
-		}
-	} else {
-		printf("-> Sorry history only stores last 20 command");
-	}
-
+/*
 //process function take in tokenised input the create process, execute the return the process
 void process(char** token) {
 
@@ -409,6 +347,7 @@ void process(char** token) {
 		return;
 	}
 }
+*/
 
 void currentPath() {
 
@@ -428,9 +367,10 @@ void setPath(char** token) {
 	}else{
 		currentPath();
 	}
+}
 	
 	//function to add a new alias
-	void addAlias(char* name, char** command, char* alias[][], int aliasCount){
+	void addAlias(char* name, char** command, char* alias[10][2], int aliasCount){
 		if (name != NULL || command != NULL) {
 			printf("-> input the name and command for the new alias");
 		} else if (aliasCount == 10) {
@@ -454,7 +394,7 @@ void setPath(char** token) {
 	}
 	
 	//funtion to remove an aliased command from the list
-	void removeAlias(char* name, char* alias[][], int aliasCount){
+	void removeAlias(char* name, char* alias[10][2], int aliasCount){
 		if (name == NULL) {
 			printf("-> input the name of the alias you are removing");
 		} else {
@@ -462,16 +402,17 @@ void setPath(char** token) {
 			for (int i = 0; i < 10 && removed == 0; i++) {
 				alias [i][0] = NULL;
 				alias [i][1] = NULL;
-				removed == 1;
+				removed = 1;
 				aliasCount -= 1;
-			if (swapped == 0) {
-				printf("Alias %s does not exist.", *name);
+			}
+			if (removed == 0) {
+				printf("Alias %s does not exist.", name);
 			}
 		}
 	}
 	
 	//Function to print all currently set aliases to the screen
-	void printAlias(char* alias[][], int aliasCount){
+	void printAlias(char* alias[10][2], int aliasCount){
 		//If there are no aliases set, display a message
 		if (aliasCount == 0) {
 			printf("There are no aliases set");
@@ -485,4 +426,3 @@ void setPath(char** token) {
 			}
 		}
 	}
-}
