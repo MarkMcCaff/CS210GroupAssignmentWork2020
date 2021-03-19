@@ -12,8 +12,8 @@
 //C function interface
 void currentDir();
 void cmdHandle();
-char* input();
-char** part1();
+char** input();
+char** tokenize();
 void process();
 void extProcess();
 void currentPath();
@@ -27,6 +27,7 @@ void printAlias();
 
 int main(void) {
 
+	char* arrToken [50];
 	//Construct a 2D array of strings to hold alias names and commands
 	char* alias[10][2];
 	/*char* alias[10][2] = malloc(sizeof(char*) * 10);
@@ -55,12 +56,12 @@ int main(void) {
 		//printf("%s\n", userInput);
 		
 		//tokenize the input
-		char** tokenizedInput = tokenize(userInput);
+		char** tokenizedInput = tokenize(userInput, arrToken);
 		// DO NOT EDIT OR DELETE THIS LINE FOR NOW
 		printf("%s\n", tokenizedInput[0]);
 	
 		// take input and handle the cmd
-		cmdHandle(part1(savedPath),savedPath, alias, aliasCount);
+		cmdHandle(input(savedPath),savedPath, alias, aliasCount);
 		
 	}
 	
@@ -81,6 +82,23 @@ void currentDir(){
 	printf("\n%s: %s ", user,cwd);
 }
 
+char** tokenize(char* input, char* arrToken[]) {
+
+	int i = 0;
+	
+	strtok(input, "\n");
+	
+		char* token = strtok(input, "\t,><&;");
+		
+		while(token != NULL){
+			
+			arrToken[i] = token;
+			
+			token = strtok(NULL, "\t,><&;");
+			i++;
+		}
+}
+
 //the tokenised input
 void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
 
@@ -89,16 +107,11 @@ void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
 	char* para = tokens[1];
 	char* cmdList[8];
 	
-	//Allow aliases to alias other aliases, loop until we know the command is not an alias:
-	int notAlias = 0;
-	while (notAlias = 0) {
-		notAlias = 1;
-		for (int i = 0; i < 10; i++) {
-			if (*tokens == alias[i][0]) {
-				tokens = alias[i][1];
-				notAlias = 0;
-			}	
-		}
+	for (int i = 0; i < 10; i++) {
+		if (*tokens == alias[i][0]) {
+			tokens = alias[i][1];
+			break;
+		}	
 	}
 	
 	// should be holding the history commands
@@ -274,7 +287,7 @@ void process(char ** token){
 
 
 
-char** part1(char* path){
+char** input(char* path){
 
 	char input[512];
 	char** arrToken = malloc(50 * sizeof(char*));
