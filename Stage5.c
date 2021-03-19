@@ -252,7 +252,7 @@ void printHistory() {
     // prints the current list of commands stores in history 
     for (int i = 0; i < 20; i++) {
         // if the only character present is a null terminator then it won't print anything
-        if (!histEmpty(i)) {
+        if (histEmpty(i) == 1) {
             // prints a number alongside the command and inserts a '/0' for formatting
             printf("%d %s%c", (i + 1), history[i], '\0');
         }
