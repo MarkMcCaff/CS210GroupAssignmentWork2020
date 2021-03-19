@@ -23,7 +23,7 @@ void cmdHistory();
 void historyHandle();
 void printHistory();
 void prevHistoryHandle();
-
+int histEmpty();
 int main(void){
 
     // saving the path into a variable
@@ -51,7 +51,7 @@ int main(void){
 
         //handling the tokenized input
         cmdHandle(tokenizedInput,savedPath);
-                                                                                         
+                                                                                                                                                                                                          
     }
     
     //return main
@@ -112,11 +112,16 @@ void cmdHandle (char** tokens, char* path){
         case 2:
         
             historyHandle(para,path); 
+            
         break; 
         
         case 3:
          
-            prevHistoryHandle(path);           
+         if(para != NULL) {
+                printf("-> error! this command cannot take any arguments");
+            } else {
+                prevHistoryHandle(path); 
+            }          
     
         break;
             
@@ -177,7 +182,13 @@ void cmdHandle (char** tokens, char* path){
         
         //print history
         case 8:
+        
+            if(para != NULL) {
+                printf("-> error! this command cannot take any arguments");
+            } else {
             printHistory();
+            }
+            
         break;
 
         //if none of these cmd has been entered then print error statement
@@ -200,26 +211,48 @@ void prevHistoryHandle(char* path) {
 
     // If the counter is 0 then the previous command must be stored at index 19 as it recently reset
     if (counter == 0) {
-         // tokenises the 19th command and then executes it
-         char** tInput = tokenize(history[19]);
-         printf("%s\n", tInput[0]);
-         cmdHandle(tInput,path);
-
+         // if the chosen history command is empty then it needs to print an error message 
+         if (histEmpty(19) == 1) {
+             // tokenises the 19th command and then executes it
+             char** tInput = tokenize(history[19]);
+             printf("%s\n", tInput[0]);
+             cmdHandle(tInput,path);
+         } else {
+            // prints a number alongside the command and inserts a '/0' for formatting
+            printf("Error! There is no command stored at this element in history.");
+        }      
+             
     }
     // If it's not 0 then the index will be counter - 1 as counter always increments after pushing
     else {
+         // if the chosen history command is empty then it needs to print an error message 
+         if (histEmpty(counter - 1) == 1) {
          // tokenises the specific command at counter - 1 (because of previous increments) and executes
          char** tInput = tokenize(history[counter - 1]);
          printf("%s\n", tInput[0]);
          cmdHandle(tInput,path);
+         } else {
+            // prints a number alongside the command and inserts a '/0' for formatting
+            printf("Error! There is no command stored at this element in history.");
+        }
+
     }
+}
+
+int histEmpty (int index) {
+    if (history[index][0] != '\0') {
+        // returns 1 if the element is NOT empty
+        return 1;
+    }
+    // otherwise returns 0
+    return 0;
 }
 
 void printHistory() {
     // prints the current list of commands stores in history 
     for (int i = 0; i < 20; i++) {
         // if the only character present is a null terminator then it won't print anything
-        if (history[i][0] != '\0') {
+        if (!histEmpty(i)) {
             // prints a number alongside the command and inserts a '/0' for formatting
             printf("%d %s%c", (i + 1), history[i], '\0');
         }
@@ -233,7 +266,7 @@ void historyHandle(char* para, char* path){
     
     if(i > 0 && i < 21){
        
-        if(history[i - 1] != NULL){
+        if(histEmpty(i -1) == 1){
 
             char** tInput = tokenize(history[i - 1]);
 
@@ -268,10 +301,12 @@ void process(char ** token){
     }else if (pid == 0){
         // excute the cmd with it's arug, then check for errors
         if(execvp(token[0],token)<0){
+
             
             //error occured print errMsg
             fprintf(stderr,"-> [%s]: ", token[0]);
             perror ("");
+
             
             exit(1);
         }
@@ -336,7 +371,6 @@ char** tokenize(char* input){
                 i++;
         }
         
-
     return arrToken;
 
 }
