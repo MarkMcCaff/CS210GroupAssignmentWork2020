@@ -199,22 +199,20 @@ void cmdHandle (char** tokens, char* path){
 }
 
 void pushHistory(char* input){
-
-        strcpy(history[counter], input);
-	counter = (counter + 1) % 20;
-        //printf("-> current cmd is %s \n", history[i]);
-        //printf("-> current cmd pos is %d \n", i);
-               
+		strcpy(history[counter], input);
+		counter = (counter + 1) % 20;
+		//printf("-> current cmd is %s \n", history[i]);
+		//printf("-> current cmd pos is %d \n", i)       
 }
 
 void prevHistoryHandle(char* path) {
-
+    char** tInput;
     // If the counter is 0 then the previous command must be stored at index 19 as it recently reset
     if (counter == 0) {
          // if the chosen history command is empty then it needs to print an error message 
          if (histEmpty(19) == 1) {
              // tokenises the 19th command and then executes it
-             char** tInput = tokenize(history[19]);
+             tInput = tokenize(history[19]);
              printf("%s\n", tInput[0]);
              cmdHandle(tInput,path);
          } else {
@@ -228,14 +226,13 @@ void prevHistoryHandle(char* path) {
          // if the chosen history command is empty then it needs to print an error message 
          if (histEmpty(counter - 1) == 1) {
          // tokenises the specific command at counter - 1 (because of previous increments) and executes
-         char** tInput = tokenize(history[counter - 1]);
+         tInput = tokenize(history[counter - 1]);
          printf("%s\n", tInput[0]);
          cmdHandle(tInput,path);
          } else {
             // prints a number alongside the command and inserts a '/0' for formatting
             printf("Error! There is no command stored at this element in history.");
         }
-
     }
 }
 
@@ -249,13 +246,20 @@ int histEmpty (int index) {
 }
 
 void printHistory() {
+    // integer for tracking the number of commands printed  
+    int noCommands = 0;
     // prints the current list of commands stores in history 
     for (int i = 0; i < 20; i++) {
         // if the only character present is a null terminator then it won't print anything
         if (histEmpty(i) == 1) {
             // prints a number alongside the command and inserts a '/0' for formatting
             printf("%d %s%c", (i + 1), history[i], '\0');
+            noCommands++;
         }
+    }
+    // if no commands are printed then it prints an error message
+    if (noCommands == 0) {
+    	printf("Error! There were no previous commands to print");
     }
 }
 
@@ -343,8 +347,9 @@ char* input(char* path){
             
     //Will break when u type "exit"
     }
-
-    if(strchr(input, '!') == NULL){
+    
+    // doesn't add to the history if it's either an invocation or calling history itself
+    if((strchr(input, '!') == NULL) && (strcmp(input, "history\n") != 0)){
         pushHistory(input);
     }
 
