@@ -9,10 +9,27 @@
 
 #include "header.h"
 
+struct history {
+	//this struct stores the string command and also an integer for easy printing
+	char command[512];
+	int commandNo;
+};
+
+struct alias {
+	char name[512];
+	char command[512]; //How do I format an array of these
+};
+
+//commandNo = count + 1
+int counter = 0;
+struct history historyArray[20];
+int aliasCount = 0;
+struct alias aliases[10];
+
 //C function interface
 void currentDir();
 void cmdHandle();
-char** input();
+char* input();
 char** tokenize();
 void process();
 void extProcess();
@@ -20,22 +37,15 @@ void currentPath();
 void setPath();
 void cmdHistory();
 void historyHandle();
+void printHistory();
+void prevHistoryHandle();
+int histEmpty();
 void addAlias();
 void removeAlias();
 void printAlias();
 
 
 int main(void) {
-
-	char* arrToken [50];
-	//Construct a 2D array of strings to hold alias names and commands
-	char* alias[10][2];
-	/*char* alias[10][2] = malloc(sizeof(char*) * 10);
-	for (int i = 0; i < 10; i++) {
-		alias[i] = malloc(sizeof(char*) * 2);
-	}*/
-	//Hold the number of aliases currently held in the shell
-	int aliasCount = 0;
 
 	// saving the path into a variable
 	char savedPath[512];
@@ -56,12 +66,12 @@ int main(void) {
 		//printf("%s\n", userInput);
 		
 		//tokenize the input
-		char** tokenizedInput = tokenize(userInput, arrToken);
+		char** tokenizedInput = tokenize(userInput);
 		// DO NOT EDIT OR DELETE THIS LINE FOR NOW
-		printf("%s\n", tokenizedInput[0]);
+		printf("\n");
 	
 		// take input and handle the cmd
-		cmdHandle(input(savedPath),savedPath, alias, aliasCount);
+		cmdHandle(tokenizedInput, savedPath);
 		
 	}
 	
@@ -82,25 +92,8 @@ void currentDir(){
 	printf("\n%s: %s ", user,cwd);
 }
 
-char** tokenize(char* input, char* arrToken[]) {
-
-	int i = 0;
-	
-	strtok(input, "\n");
-	
-		char* token = strtok(input, "\t,><&;");
-		
-		while(token != NULL){
-			
-			arrToken[i] = token;
-			
-			token = strtok(NULL, "\t,><&;");
-			i++;
-		}
-}
-
 //the tokenised input
-void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
+void cmdHandle (char** tokens, char* path) {
 
 	char* cmd = *tokens;
 	int cmdID = 0;
@@ -108,8 +101,8 @@ void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
 	char* cmdList[8];
 	
 	for (int i = 0; i < 10; i++) {
-		if (*tokens == alias[i][0]) {
-			tokens = alias[i][1];
+		if (tokens == aliases[i][0]) {
+			*tokens = aliases[i][1];
 			break;
 		}	
 	}
@@ -122,25 +115,24 @@ void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
 	
 	cmdList[0] = "exit";
 	cmdList[1] = "!";
-	cmdList[2] = "cd";
-	cmdList[3] = "help";
-	cmdList[4] = "getpath";
-	cmdList[5] = "setpath";
-	cmdList[6] = "alias";
-	cmdList[7] = "unalias";
+	cmdList[2] = "!!";
+	cmdList[3] = "cd";
+	cmdList[4] = "help";
+	cmdList[5] = "getpath";
+	cmdList[6] = "setpath";
+	cmdList[7] = "history";
+	cmdList[8] = "alias";
+	cmdList[9] = "unalias";
 	
 	
 	//for loop to check which command
-	for (int i = 0; i < 9; i++) {
+	for (int i = 0; i < 10; i++) {
 		if (strcmp(cmd, cmdList[i])==0) {
 			cmdID = i + 1;
 			break;
 		}
 	}
-	
-	//Variable unused in current program. Purpose unknown
-	//int intP;
-	
+
 	switch(cmdID) {
 	
 		//exit shell terminates
@@ -152,14 +144,28 @@ void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
 			exit(0);
 		break;
 		
+		//executes the specified previous history command i.e. ! 2
 		case 2:
-		
-			//History involved functions go here
-				
+			//prints an error if there's more than one parameter
+			if (tokens[2] != NULL) {
+				printf("-> you can only enter one argument");
+			} else {
+				historyHandle(para, path);
+			}
 		break;
-			
-		// cd change directory
+		
+		//executes the previous history command (!!)
 		case 3:
+			//prints an error if there's an argument
+			if(para != NULL) {
+				printf("-> error! this command cannot take any arguments");
+			} else {
+				prevHistoryHandle(path);
+			}
+		break;
+		
+		// cd change directory
+		case 4:
 		
 			if (para==NULL) {
 			
@@ -187,13 +193,14 @@ void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
 		break;
 		
 		//help just for testing, can be changed to something more useful
-		case 4:
+		case 5:
+			
 			printf("-> SOS");
 			
 		break;
 		
 		//getpath
-		case 5:
+		case 6:
 		
 			if(para!=NULL){
 				printf("-> you don't need to enter a path");
@@ -204,19 +211,28 @@ void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
 		break;
 		
 		//setPath(tokens)
-		case 6:
+		case 7:
 		
 			setPath(tokens);
 			
 		break;
 		
-		//alias
-		case 7:
+		//print history
+		case 8:
+		
+			if(para != NULL) {
+				printf("-> error! this command cannot take any arguments");
+			} else {
+				printHistory();
+			}
+		
+		//alias (either show all aliases, or add a new alias
+		case 9:
 		
 			if (para == NULL) {
-				printAlias(alias, aliasCount);
+				printAlias();
 			} else if (tokens[2]!= NULL) {
-				addAlias(tokens[0], **tokens + 1, alias, aliasCount);
+				addAlias(tokens[0], **tokens + 1);
 			} else {
 				printf("-> to use alias function, specify a name and command, or only use word \"alias\"\n");
 			}
@@ -224,12 +240,12 @@ void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
 		break;
 		
 		//unalias
-		case 8:
+		case 10:
 		
 			if (para == NULL) {
 				printf("-> Please specify an existing alias name to remove it\n");
 			} else if (tokens[1] != NULL && tokens[2] == NULL) {
-				removeAlias(tokens[1], alias, aliasCount);
+				removeAlias();
 			} else if (tokens[2] != NULL) {
 				printf("-> You should only enter one alias name");
 			}
@@ -246,6 +262,114 @@ void cmdHandle (char** tokens, char* path, char* alias[10][2], int aliasCount) {
 			//printf("[Sorry this command can not be recognised.] \n[Please check your input.]\n");
 			
 			
+	}
+}
+
+// adds the command to the history array
+void pushHistory(char* input) {
+	// if the array is full then everything shifts to the left, deleting the earliest command
+	if (counter == 20) {
+		for (int i = 0; i < 19; i++) {
+			// copies the elements from the next command and updates the number 
+			historyArray[i] = historyArray[i + 1];
+			historyArray[i].commandNo = i + 1;
+		}
+		// add the new command to the last entry (19)
+		historyArray[19].commandNo = counter;
+		strcpy(historyArray[19].command, input);
+	} else {
+		// if it's not full it can just add the new command and increment counter
+		historyArray[counter].commandNo = counter + 1;
+		strcpy(historyArray[counter].command, input);
+		counter++;
+	}
+}
+
+//handles the !! command
+void prevHistoryHandle(char* path) {
+	
+	char** tInput;
+	// If the counter is 0 then there is no previous command so it prints an error 
+	if (counter != 0) {
+		//because we're using pointers we need to store the command and parameters in a seperate variable so they don't get deleted
+		char inputCopy[512];
+		strcpy(inputCopy, historyArray[(counter - 1)].command);
+		
+		//tokenises and executes the command
+		tInput = tokenize(historyArray[counter - 1].command);
+		printf("%s\n", tInput[0]);
+		cmdHandle(tInput,path);
+		
+		//makes sure the original command doesn't change in history and pushes the invoked command
+		strcpy(historyArray[(counter - 1)].command, inputCopy);
+	} else {
+		printf("Error! There is no command stored at this element in history.");
+	}
+}
+
+//this was used mostly for a circular array (cheks if the element is empty)
+int histEmpty (int index) {
+	if (historyArray[index].command[0] != '\0') {
+		// returns 1 if the element is NOT empty
+		return 1;
+	}
+	// otherwise returns 0
+	return 0;
+}
+
+//prints the history and parameters alongside its command number
+void printHistory() {
+	if (counter != 0) {
+		//prints the current list of list of commands stored in history
+		for (int i = 0; i < 20; i++) {
+			// if the only character present is a null terminator then it won't print anything
+			if (histEmpty(i) == 1) {
+				// prints a number alongside the command and inserts a '/0' for formatting
+				printf("%d %s%c", historyArray[i].commandNo, historyArray[i].command, '\0');
+			}
+		}
+	} else {
+		printf("Error! There were no previous commands to print");
+	}
+}
+
+void historyHandle(char* para, char* path) {
+	
+	int i = 0;
+	i = atoi(para);
+	
+	// if a negative number is given then it tries to convert it into a valid command 
+	if (i < 0) {
+	// uses counter + 1 so that the last command can be an option
+		i = ((counter + 1) - abs(i));
+	}
+	
+	if(i > 0 && i < 21) {
+		
+		if(histEmpty(i - 1) == 1) {
+		
+		// temporary variable used to store the original command so that the parameters are not lost when tokenised
+			char inputCopy[512];
+		strcpy(inputCopy, historyArray[(i - 1)].command);
+		
+		char** tInput = tokenize(historyArray[(i - 1)].command);
+		
+		//DO NOT DELETE THIS LINE CODE IS BASED ON THIS TO RUN
+		printf("%s\n", tInput[0]);
+		
+		//handle the tokenized input
+		cmdHandle(tInput,path);
+		
+		//handle the tokenized input
+		cmdHandle(tInput,path);
+		
+		//makes sure the original command doesn't change in history and pushes the invoked command
+		strcpy(historyArray[(i - 1)].command, inputCopy);
+		} else {
+			printf("-> sorry, command not found ");
+		}
+	} else {
+		printf("-> sorry, command not found. Use a parameter wihin current range");
 	}
 }
 
@@ -285,13 +409,10 @@ void process(char ** token){
 	
 }
 
-
-
-char** input(char* path){
+char* input(char* path){
 
 	char input[512];
-	char** arrToken = malloc(50 * sizeof(char*));
-	int i = 0;
+	input = (char*)malloc(512);
 	int c = 0;
 	
 	currentDir();
@@ -309,63 +430,35 @@ char** input(char* path){
 		exit(0);
 		
 	//Will break when u type "exit"
-	}else{
+	}
 	
-		strtok(input, "\n");
-		
-		char* token = strtok(input," \t,|><&;");
+	// doesn't add to the history if it's either an invocation, calling history, or just 'enter' is pressed
+	if((strchr(input, '!') == NULL) && (strcmp(input, "history\n") != 0) && (strcmp(input, "\n") != 0)) {
+		pushHistory(input);
+	}	
+	
+	return input;
+}
+
+char** tokenize(char* input, char* arrToken[]) {
+
+	int i = 0;
+	char** arrToken = malloc(50 * sizeof(char*));
+	
+	strtok(input, "\n");
+	
+		char* token = strtok(input, "\t,><&;");
 		
 		while(token != NULL){
-			//printf ("%s\n",token);Just used for testing purposes.
 			
 			arrToken[i] = token;
 			
-			token = strtok(NULL, " \t,|><&;");
-			
+			token = strtok(NULL, "\t,><&;");
 			i++;
 		}
-	}
-	
+		
 	return arrToken;
-
 }
-
-/*
-//process function take in tokenised input the create process, execute the return the process
-void process(char** token) {
-
-	//declare pid and create child process
-	pid)t pid = fork();
-	
-	//if we can't create child process failed
-	if(pid < 0){
-		//print error msg
-		perror("-> failed to create process");
-		return;
-		
-	//if we can create a child process
-	}else if (pid == 0) {
-		// execute the cmd with it's arg, then check for errors
-		if(execvp(token[0],token)<0){
-		
-		
-			//error occured print errMsg
-			fprintf(stderr,"-> [%s]: ", token[0]);
-			perror ("");
-			
-			
-			exit(1);
-		}
-		//kill the process
-		//exit(EXIT_FAILURE);
-	}else{
-		
-		//no error occured but child process to wait (that is the end of that child process)
-		wait(NULL);
-		return;
-	}
-}
-*/
 
 void currentPath() {
 
@@ -387,8 +480,8 @@ void setPath(char** token) {
 	}
 }
 	
-	//function to add a new alias
-	void addAlias(char* name, char** command, char* alias[10][2], int aliasCount){
+//function to add a new alias
+void addAlias(char* name, char** command){
 		if (name != NULL || command != NULL) {
 			printf("-> input the name and command for the new alias");
 		} else if (aliasCount == 10) {
@@ -396,30 +489,30 @@ void setPath(char** token) {
 		} else {
 			int placePosition = -1;
 			for (int i = 0; i < 10; i++) {
-				if (alias[i][0] == name) {
+				if (aliases[i][0] == name) {
 					placePosition = i;
 					printf("Alias command has been overriden");
 					break;
-				} else if (alias[i][0] == NULL && i < placePosition) {
+				} else if (aliases[i][0] == NULL && i < placePosition) {
 					placePosition = i;
 				}
 			}
 			if (placePosition > -1) {
-				alias[placePosition][0] = name;
-				alias[placePosition][1] = command;
+				aliases[placePosition][0] = name;
+				aliases[placePosition][1] = command;
 			}
 		}	
 	}
 	
 	//funtion to remove an aliased command from the list
-	void removeAlias(char* name, char* alias[10][2], int aliasCount){
+	void removeAlias(char* name){
 		if (name == NULL) {
 			printf("-> input the name of the alias you are removing");
 		} else {
 			int removed = 0;
 			for (int i = 0; i < 10 && removed == 0; i++) {
-				alias [i][0] = NULL;
-				alias [i][1] = NULL;
+				aliases[i][0] = NULL;
+				aliases[i][1] = NULL;
 				removed = 1;
 				aliasCount -= 1;
 			}
@@ -430,7 +523,7 @@ void setPath(char** token) {
 	}
 	
 	//Function to print all currently set aliases to the screen
-	void printAlias(char* alias[10][2], int aliasCount){
+	void printAlias(){
 		//If there are no aliases set, display a message
 		if (aliasCount == 0) {
 			printf("There are no aliases set");
@@ -438,8 +531,8 @@ void setPath(char** token) {
 		} else {
 			//While set aliases are detected, print the alias name to the screen.
 			for (int i = 0; i < 10; i++) {
-				if (alias[i][0] != NULL) {
-					printf("%s\n", alias[i][0]);
+				if (aliases[i][0] != NULL) {
+					printf("%s\n", aliases[i][0]);
 				}
 			}
 		}
