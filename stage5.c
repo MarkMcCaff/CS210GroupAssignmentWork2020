@@ -1,4 +1,3 @@
-//switch to include header.h if you want
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -8,9 +7,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-//structure for the history storage
+// structure for the history storage
 struct history {
-    //this struct stores the string command and also an integer for easy printing 
+    // this struct stores the string command and also an integer for easy printing 
     char command[512];
     int commandNo;
 };
@@ -36,21 +35,21 @@ int histEmpty();
 
 int main(void){
 
-    //saving the path into a variable
+    // saving the path into a variable
     char savedPath[512];
     
     strcpy(savedPath,getenv("PATH"));
 
-    //set current directory to home
+    // set current directory to home
     chdir(getenv("HOME"));
 
-    //prompt init message
+    // prompt init message
     printf("Welcome to CS210 Group Shell Project \n");
 
-    //prompt loop while true until exit exit(0)
+    // prompt loop while true until exit exit(0)
     while (1){
 
-        //take input 
+        // take input 
         char * userInput = input(savedPath);
         //printf("%s\n", userInput);
 
@@ -60,8 +59,8 @@ int main(void){
         printf("\n");
 
         //handling the tokenized input
-        cmdHandle(tokenizedInput, savedPath);
-                                                                   
+        cmdHandle(tokenizedInput,savedPath);
+                                                                                                                                                                                                          
     }
     
     //return main
@@ -76,9 +75,9 @@ void currentDir(){
 
     char cwd[PATH_MAX];
     //getcwd function get current working dir
-    getcwd(cwd, sizeof(cwd));
+    getcwd(cwd,sizeof(cwd));
     //print to prompt
-    printf("\n%s: %s ", user, cwd);
+    printf("\n%s: %s ", user,cwd);
 }
 
 //the tokenised input
@@ -90,6 +89,7 @@ void cmdHandle (char** tokens, char* path){
     char* cmdList[8];
     
     //list of possible input, subject to change
+   
     cmdList[0] = "exit";
     cmdList[1] = "!";
     cmdList[2] = "!!";
@@ -109,28 +109,28 @@ void cmdHandle (char** tokens, char* path){
 
     switch(cmdID){
 
-        //exit shell terminates
+        // exit shell terminates
         case 1 :
-            //restore the original path before closing
+            // restore the original path before closing
             setenv("PATH", path, 1);
             currentPath();
             printf("-> exit shell \n");
             exit(0);
         break;
         
-        //executes the specified previous history command i.e ! 2
+        // executes the specified previous history command i.e ! 2
         case 2:
-            //prints an error if there's more than one parameter 
+            // prints an error if there's more than one parameter 
             if (tokens[2] != NULL) {
-                printf("-> you can only enter one argument");
+                 printf("-> you can only enter one argument");
             } else {
-                historyHandle(para, path); 
+                historyHandle(para,path); 
             }
         break; 
         
-        //executes the previous history command (!!) 
+        // executes the previous history command (!!) 
         case 3:
-            //prints an error if there's an arguments  
+            // prints an error if there's an arguments  
             if(para != NULL) {
                 printf("-> error! this command cannot take any arguments");
             } else {
@@ -138,27 +138,27 @@ void cmdHandle (char** tokens, char* path){
             }          
         break;
             
-        //cd change directry
+        // cd change directry
         case 4 :
              
-            if (para == NULL) {
+            if (para==NULL){
 
                 printf("-> back to home dirctory");
                 //cd back to users home dir
                 chdir(getenv("HOME"));
             
             //run chdir function and check for return
-            } else if (tokens[2]!=0) {
+            }else if(tokens[2]!=0){
 
                 printf("-> you can only enter one path");
 
-            }else if (chdir(para) != 0){
+            }else if(chdir(para)!=0){
 
                 //failed - print error statement
                 fprintf(stderr,"-> failed to cd, an error occured with [%s]: ", para);
                 perror ("");
             
-            } else {
+            }else{
 
                 // worked print the current working directory
                 currentDir();
@@ -166,7 +166,7 @@ void cmdHandle (char** tokens, char* path){
         
         break;
 
-        //help just for testing, can be change to something more useful
+        //help just for testing, can be change to something more useful (given even more testing)
         case 5:
 
      	    printf("SOS");
@@ -176,9 +176,9 @@ void cmdHandle (char** tokens, char* path){
         //getpath
         case 6:
 
-            if(para != NULL){
+            if(para!= NULL){
                 printf("-> you don't need to enter a path");
-            } else {
+            }else{
                 currentPath();
             }
 
@@ -197,7 +197,7 @@ void cmdHandle (char** tokens, char* path){
             if(para != NULL) {
                 printf("-> error! this command cannot take any arguments");
             } else {
-                printHistory();
+            printHistory();
             }
             
         break;
@@ -210,7 +210,7 @@ void cmdHandle (char** tokens, char* path){
 }
 
 // adds the command to the history array
-void pushHistory(char* input) {
+void pushHistory(char* input){
     // if the array is full then everything shifts to the left, deleting the earlier command
     if (counter == 20) {
         for (int i = 0; i < 19; i++) {
@@ -221,8 +221,8 @@ void pushHistory(char* input) {
         // add the new command to the last entry (19)
         historyArray[19].commandNo = counter; 
         strcpy(historyArray[19].command, input);
-    }
-    else {
+     }
+     else {
         // if it's not full it can just add the new command and increment counter
         historyArray[counter].commandNo = counter + 1;
         strcpy(historyArray[counter].command, input);
@@ -230,30 +230,28 @@ void pushHistory(char* input) {
     }
 }
 
-//handles the !! command
+// handles the !! command
 void prevHistoryHandle(char* path) {
-    
     char** tInput;
     // If the counter is 0 then there is no previous command so it prints an error
     if (counter != 0) {
-        //because we're using pointers we need to store the command and parameters in a seperate variable so they dont get deleted 
-        char inputCopy[512];
-        strcpy(inputCopy, historyArray[(counter - 1)].command);
-        
-        //tokenises and executes the command 
-        tInput = tokenize(historyArray[counter - 1].command);
-        printf("%s\n", tInput[0]);
-        cmdHandle(tInput,path);
-
-        //makes sure the original command doesnt't change in history and pushes the invoked command
-        strcpy(historyArray[(counter - 1)].command, inputCopy);
+            //because we're using pointers we need to store the command and parameters in a seperate variable so they dont get deleted 
+            char inputCopy[512];
+            strcpy(inputCopy, historyArray[(counter - 1)].command);
+            // tokenises and executes the command 
+            tInput = tokenize(historyArray[counter - 1].command);
+            printf("%s\n", tInput[0]);
+            cmdHandle(tInput,path);
+            
+            //makes sure the original command doesnt't change in history and pushes the invoked command
+            strcpy(historyArray[(counter - 1)].command, inputCopy);
             
     } else {
-        printf("Error! There is no command stored at this element in history.");
-    }
+            printf("Error! There is no command stored at this element in history.");
+           }
 }
 
-//this was used mostly for a circular array (checks if the element is empty)
+// this was used mostly for a circular array (checks if the element is empty)
 int histEmpty (int index) {
     if (historyArray[index].command[0] != '\0') {
         // returns 1 if the element is NOT empty
@@ -263,7 +261,7 @@ int histEmpty (int index) {
     return 0;
 }
 
-//prints the history and parameters alongside its command number 
+// prints the history and parameters alongside its command number 
 void printHistory() {
     if (counter != 0) {
         // prints the current list of commands stored in history 
@@ -290,30 +288,30 @@ void historyHandle(char* para, char* path){
         i = ((counter + 1) - abs(i));
     }
     
-    if (i > 0 && i < 21){
+    if(i > 0 && i < 21){
        
-        if(histEmpty(i - 1) == 1){
+        if(histEmpty(i -1) == 1){
 
-        // temporary variable used to store the original command so that the parameters are not lost when tokenised 
+            // temporary variable used to store the original command so that the parameters are not lost when tokenised 
 	    char inputCopy[512];
-        strcpy(inputCopy, historyArray[(i - 1)].command);
+            strcpy(inputCopy, historyArray[(i - 1)].command);
 
-        char** tInput = tokenize(historyArray[(i - 1)].command);
+            char** tInput = tokenize(historyArray[(i - 1)].command);
             
-        //DO NOT DELETE THIS LINE CODE IS BASED ON THIS TO RUN
-        printf("%s\n", tInput[0]);
+            //DO NOT DELETE THIS LINE CODE IS BASED ON THIS TO RUN
+            printf("%s\n", tInput[0]);
 
-        //handle the tokenized input
-        cmdHandle(tInput,path);
+            //handle the tokenized input
+            cmdHandle(tInput,path);
             
-        //makes sure the original command doesnt't change in history and pushes the invoked command
-        strcpy(historyArray[(i - 1)].command, inputCopy);
+            //makes sure the original command doesnt't change in history and pushes the invoked command
+            strcpy(historyArray[(i - 1)].command, inputCopy);
 
-        } else {
+        }else{
             printf("-> sorry, command not found ");
         }
                 
-    } else {
+    }else{
         printf("-> sorry, command not found. use a parameter within current range");
     }
 }
@@ -325,30 +323,33 @@ void process(char ** token){
     pid_t pid = fork();
 
     //if we can't create child process failed
-    if(pid < 0) {
+    if(pid < 0){
         //print error msg
         perror("-> failed to create process");
         return;
 
     //if we can and created a child process
-    } else if (pid == 0) {
+    }else if (pid == 0){
         // excute the cmd with it's arug, then check for errors
         if(execvp(token[0],token)<0){
 
+            
             //error occured print errMsg
             fprintf(stderr,"-> [%s]: ", token[0]);
             perror ("");
 
+            
             exit(1);
         }
         //kill the process
         //exit(EXIT_FAILURE);
-    } else {
+    }else{
         
         //no error occured put child process to wait (that is the end od that child process)
         wait(NULL);
         return;
     }
+
 }
     
 char* input(char* path){
@@ -375,7 +376,7 @@ char* input(char* path){
     }
     
     // doesn't add to the history if it's either an invocation, calling history, or just 'enter' is pressed
-    if((strchr(input, '!') == NULL) && (strcmp(input, "history\n") != 0) && (strcmp(input, "\n") != 0)) {
+    if((strchr(input, '!') == NULL) && (strcmp(input, "history\n") != 0) && (strcmp(input, "\n") != 0)){
         pushHistory(input);
     }
 
@@ -383,7 +384,7 @@ char* input(char* path){
     
 }
 
-char** tokenize(char* input) {
+char** tokenize(char* input){
 
     int i = 0;
     char** arrToken = malloc(50 * sizeof(char*));
@@ -392,14 +393,14 @@ char** tokenize(char* input) {
     
         char* token = strtok (input," \t,|><&;");
 
-        while(token != NULL) {
-            //printf ("%s\n",token);Just used for testing purposes,
+        while(token != NULL){
+                //printf ("%s\n",token);Just used for testing purposes,
                 
-            arrToken[i] = token;
+                arrToken[i] = token;
 
-            token = strtok (NULL, " \t,|><&;");
+                token = strtok (NULL, " \t,|><&;");
 
-            i++;
+                i++;
         }
         
     return arrToken;
@@ -417,11 +418,11 @@ void setPath(char** token){
 
     if (token[1] == NULL) {
         printf("-> path could not be set: no address");
-    } else if (token[2] != NULL) {
+    }else if (token[2] != NULL){
         printf("-> you can only enter one path");
-    } else if (setenv("PATH", token[1], 1) != 0) {
+    }else if (setenv("PATH", token[1], 1) != 0) {
         printf("-> path could not be set: bad address");
-    } else {
+    }else{
         currentPath();
     }
 }
