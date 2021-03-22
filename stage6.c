@@ -254,7 +254,7 @@ void prevHistoryHandle(char* path) {
             strcpy(historyArray[(counter - 1)].command, inputCopy);
             
     } else {
-            printf("Error! There is no command stored at this element in history.");
+            printf("-> Error! There is no command stored at this element in history.");
            }
 }
 
@@ -280,7 +280,7 @@ void printHistory() {
             }
         }
     } else {
-    	printf("Error! There were no previous commands to print");
+    	printf("-> Error! There were no previous commands to print");
     }
 }
 
@@ -315,11 +315,11 @@ void historyHandle(char* para, char* path){
             strcpy(historyArray[(i - 1)].command, inputCopy);
 
         }else{
-            printf("-> sorry, command not found ");
+            printf("-> Sorry, no command stored at [%d].",i);
         }
                 
     }else{
-        printf("-> sorry, command not found. use a parameter within current range");
+        printf("-> Sorry, command not found. Use a parameter between -20 and 20 except 0");
     }
 }
 
@@ -376,6 +376,7 @@ char* input(char* path){
         // restore the original path before closing
         setenv("PATH", path, 1);
         currentPath();
+        saveHistory();
         printf("\n-> exit shell \n");
         exit(0);
             
