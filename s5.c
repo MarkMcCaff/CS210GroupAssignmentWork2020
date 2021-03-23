@@ -27,7 +27,7 @@ int main(void){
 
     char* arrToken [50];
     //char* tokenizedInput [50];
-
+    
     // saving the path into a variable
     char savedPath[512];
     
@@ -76,9 +76,9 @@ void currentDir(){
 }
 
 //the tokenised input
-void cmdHandle (char** tokens, char* path){
+void cmdHandle (char* tokens[], char* path){
 
-    char* cmd =  *tokens;
+    char* cmd =  tokens[0];
     int cmdID = 0;
     char* para = tokens[1];
     char* cmdList[6];
@@ -227,13 +227,13 @@ void historyHandle(char* para, char* path){
        
         if(history[i - 1] != NULL){
 
-            //char** tInput = tokenize(history[i - 1]);
+            char** tInput = tokenize(history[i - 1]);
 
             //DO NOT DELETE THIS LINE CODE IS BASED ON THIS TO RUN
-            //printf("%s\n", tInput[0]);
+            printf("%s\n", tInput[0]);
 
             //handling the tokenized input
-            //cmdHandle(tInput,path);
+            cmdHandle(tInput,path);
 
         }else{
             printf("-> sorry, command not found ");
@@ -246,7 +246,7 @@ void historyHandle(char* para, char* path){
 
 
 //process function take in tokenised input the create process, excute the return the process
-void process(char ** token){
+void process(char * token[]){
 
     //declare pid and create child process
     pid_t pid = fork();
@@ -283,10 +283,10 @@ void process(char ** token){
 
 
     
-char* input(char* path){
+char[] input(char* path){
 
-    char* input;
-    input = (char*)malloc(512);
+    char input[512];
+    //input = (char*)malloc(512);
     int c = 0;
     
     
@@ -317,7 +317,7 @@ char* input(char* path){
     
 }
 
-void  tokenize(char* input, char* arrToken[]){
+void  tokenize(char input[], char* arrToken[]){
 
     int i = 0;
     //char* arrToken [50];
@@ -329,7 +329,7 @@ void  tokenize(char* input, char* arrToken[]){
         while(token != NULL){
                 //printf ("%s\n",token);Just used for testing purposes,
                 
-                arrToken[i] = token;
+                arrToken[i] = malloc(strlen(token));
 
                 token = strtok (NULL, " \t,|><&;");
 
@@ -347,7 +347,7 @@ void currentPath() {
 
 }
 
-void setPath(char** token){
+void setPath(char* token[]){
 
     if (token[1] == NULL) {
         printf("-> path could not be set: no address");
