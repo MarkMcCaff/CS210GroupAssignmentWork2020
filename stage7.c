@@ -79,6 +79,7 @@ int main(void) {
 		// take input and handle the cmd
 		cmdHandle(token, savedPath);
 		
+		
 	}
 	
 	//return main
