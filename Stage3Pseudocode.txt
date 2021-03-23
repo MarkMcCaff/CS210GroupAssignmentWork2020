@@ -1,0 +1,64 @@
+Main function:		
+	Save path of shell
+	Change directory to home directory
+	Display current working directory (line may be for debugging purposes)
+	Display welcome message
+	Declare input string
+	Declare strtok holder
+	While user is prompted for input:
+		Declare fixed size array of tokens - size 50
+		Display user input
+		Obtain input string from user input 
+		If end-of-file detected (ctrl+d pressed):
+			Restore original path
+			Exit shell
+		If user input is "exit":
+			Restore original path
+			Exit shell
+		Else 
+			Eliminate trailing enter from user input
+			Tokenise Strings from user input using set of delimiters
+			While token string exits
+				Add token string to array of tokens
+				Select next token
+			If first token is execute command:
+				If second token not found:
+					Display error message
+				Construct dynamic-size array of strings holding parameters
+				While 3rd token or after not yet found by program:
+					Add token as element to parameter array
+				Call Execution function while passing program name (2nd item from token array) and array of parameters
+			Else if first token is get path command:
+			Else if first token is set path command:
+				If second token not found:
+					Display error message
+			Else
+				Display "command not found" error
+	Return 0 for main function return value
+	
+
+
+Execution function (parameters: program name; program parameters):
+	Declare process identifier
+	Fork child process into process identifier
+	If process identifier is less than 0
+		Display error message
+	If process identifier is 0
+		Execute file with parameters (function accounts for PATH environment parameters)
+		If file fails to load
+			Display error message
+	Else
+		Wait for child process to complete
+
+
+	
+Get path function:
+	Display user's current path via system call
+
+
+
+Set path function (parameter: path):
+	Change user's current directory to parameter path directory
+	If parameter path not found
+		Display error message
+	
