@@ -16,8 +16,8 @@ struct history {
 };
 
 struct alias {
-	char name[512];
-	char command[512]; //How do I format an array of these
+	char* name;
+	char* command; //How do I format an array of these
 };
 
 //commandNo = count + 1
@@ -29,8 +29,8 @@ struct alias aliases[10];
 //C function interface
 void currentDir();
 void cmdHandle();
-char* input();
-char** tokenize();
+void input();
+void tokenize();
 void process();
 void extProcess();
 void currentPath();
@@ -50,6 +50,8 @@ int main(void) {
 	// saving the path into a variable
 	char savedPath[512];
 	strcpy(savedPath,getenv("PATH"));
+	char userInput[512];
+	char* token[50];
 	
 	// set current directory to home
 	chdir(getenv("HOME"));
@@ -62,16 +64,15 @@ int main(void) {
 	
 		// take input
 		
-		char *userInput = input(savedPath);
-		//printf("%s\n", userInput);
+		input(userInput, savedPath);
 		
 		//tokenize the input
-		char** tokenizedInput = tokenize(userInput);
+		tokenize(userInput, token);
 		// DO NOT EDIT OR DELETE THIS LINE FOR NOW
 		printf("\n");
 	
 		// take input and handle the cmd
-		cmdHandle(tokenizedInput, savedPath);
+		cmdHandle(token, savedPath);
 		
 	}
 	
@@ -93,18 +94,25 @@ void currentDir(){
 }
 
 //the tokenised input
-void cmdHandle (char** tokens, char* path) {
+void cmdHandle (char* tokens[50], char* path) {
 
-	char* cmd = *tokens;
+	char* cmd = tokens[0];
 	int cmdID = 0;
 	char* para = tokens[1];
-	char* cmdList[8];
+	char* cmdList[10];
+	int i = 0;
 	
-	for (int i = 0; i < 10; i++) {
-		if (tokens == aliases[i][0]) {
-			*tokens = aliases[i][1];
-			break;
-		}	
+	while (tokens[i] != NULL) {
+		for (int j = 0; j < 10; j++) {
+			if (aliases[j].name == NULL) {
+				break;
+			}
+			if (strcmp(tokens[i], aliases[j].name) == 0) {
+				tokens[i] = aliases[j].command;
+				break;
+			}	
+		}
+		i++;
 	}
 	
 	// should be holding the history commands
@@ -225,6 +233,8 @@ void cmdHandle (char** tokens, char* path) {
 			} else {
 				printHistory();
 			}
+			
+		break;
 		
 		//alias (either show all aliases, or add a new alias
 		case 9:
@@ -288,7 +298,7 @@ void pushHistory(char* input) {
 //handles the !! command
 void prevHistoryHandle(char* path) {
 	
-	char** tInput;
+	char* tInput[50];
 	// If the counter is 0 then there is no previous command so it prints an error 
 	if (counter != 0) {
 		//because we're using pointers we need to store the command and parameters in a seperate variable so they don't get deleted
@@ -296,7 +306,7 @@ void prevHistoryHandle(char* path) {
 		strcpy(inputCopy, historyArray[(counter - 1)].command);
 		
 		//tokenises and executes the command
-		tInput = tokenize(historyArray[counter - 1].command);
+		tokenize(tInput, historyArray[counter - 1].command);
 		printf("%s\n", tInput[0]);
 		cmdHandle(tInput,path);
 		
@@ -352,7 +362,8 @@ void historyHandle(char* para, char* path) {
 			char inputCopy[512];
 		strcpy(inputCopy, historyArray[(i - 1)].command);
 		
-		char** tInput = tokenize(historyArray[(i - 1)].command);
+		char* tInput[50];
+		tokenize(tInput, historyArray[(i - 1)].command);
 		
 		//DO NOT DELETE THIS LINE CODE IS BASED ON THIS TO RUN
 		printf("%s\n", tInput[0]);
@@ -409,10 +420,8 @@ void process(char ** token){
 	
 }
 
-char* input(char* path){
+void input(char input[512], char* path){
 
-	char input[512];
-	input = (char*)malloc(512);
 	int c = 0;
 	
 	currentDir();
@@ -437,27 +446,18 @@ char* input(char* path){
 		pushHistory(input);
 	}	
 	
-	return input;
 }
 
-char** tokenize(char* input, char* arrToken[]) {
+void tokenize(char* input, char* arrToken[50]) {
 
 	int i = 0;
-	char** arrToken = malloc(50 * sizeof(char*));
 	
-	strtok(input, "\n");
+	arrToken[0] = strtok(input, " \t,><&;\n");
 	
-		char* token = strtok(input, "\t,><&;");
-		
-		while(token != NULL){
-			
-			arrToken[i] = token;
-			
-			token = strtok(NULL, "\t,><&;");
+		while(arrToken[i] != NULL){
 			i++;
+			arrToken[i] = strtok(NULL, " \t,><&;");
 		}
-		
-	return arrToken;
 }
 
 void currentPath() {
@@ -489,17 +489,19 @@ void addAlias(char* name, char** command){
 		} else {
 			int placePosition = -1;
 			for (int i = 0; i < 10; i++) {
-				if (aliases[i][0] == name) {
+				if (aliases[i].name == name) {
 					placePosition = i;
 					printf("Alias command has been overriden");
 					break;
-				} else if (aliases[i][0] == NULL && i < placePosition) {
+				} else if (aliases[i].name == NULL && i < placePosition) {
 					placePosition = i;
 				}
 			}
 			if (placePosition > -1) {
-				aliases[placePosition][0] = name;
-				aliases[placePosition][1] = command;
+				aliases[placePosition].name = malloc(strlen(name) + 1);
+				strcpy(aliases[placePosition].name, name);
+				aliases[placePosition].command = malloc(strlen(*command) + 1);
+				strcpy(aliases[placePosition].command, *command);
 			}
 		}	
 	}
@@ -511,8 +513,8 @@ void addAlias(char* name, char** command){
 		} else {
 			int removed = 0;
 			for (int i = 0; i < 10 && removed == 0; i++) {
-				aliases[i][0] = NULL;
-				aliases[i][1] = NULL;
+				aliases[i].name = NULL;
+				aliases[i].command = NULL;
 				removed = 1;
 				aliasCount -= 1;
 			}
@@ -531,8 +533,8 @@ void addAlias(char* name, char** command){
 		} else {
 			//While set aliases are detected, print the alias name to the screen.
 			for (int i = 0; i < 10; i++) {
-				if (aliases[i][0] != NULL) {
-					printf("%s\n", aliases[i][0]);
+				if (aliases[i].name != NULL) {
+					printf("%s\n", aliases[i].name);
 				}
 			}
 		}
