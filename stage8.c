@@ -1,13 +1,11 @@
-//
-// main.c
-// test 
-// 
-// Created by SULEMAN AKHTER on 25/01/2021.
-// Modified by Jackson Blair
-// Error exists - everything
-//
-
-#include "header.h"
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <limits.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 struct history {
 	//this struct stores the string command and also an integer for easy printing
@@ -17,7 +15,7 @@ struct history {
 
 struct alias {
 	char* name;
-	char* command; //How do I format an array of these
+	char* command;
 };
 
 //commandNo = count + 1
@@ -45,6 +43,7 @@ void loadHistory();
 void addAlias();
 void removeAlias();
 void printAlias();
+void aliasHandle();
 void saveAlias();
 void loadAlias();
 
@@ -60,30 +59,31 @@ int main(void) {
 	// set current directory to home
 	chdir(getenv("HOME"));
 
-	// tries to load the previously saved history
-    loadHistory();
-
-    //tries to load the saved aliases into array aliases
-    loadAlias();
-	
 	// prompt init message
 	printf("Welcome to CS210 Group Shell Project \n");
+    // tries to load the previously saved history
+        loadHistory();
+
+    //tries to load the saved aliases into array aliases
+        loadAlias();
 	
-	// pronpt loop while true until exit exit(0)
+	// prompt loop while true until exit exit(0)
 	while (1){
 	
-		// take input
-		
+		// take input	
 		input(userInput, savedPath);
-		
-		//tokenize the input
-		tokenize(userInput, token);
-		// DO NOT EDIT OR DELETE THIS LINE FOR NOW
-		printf("\n");
-	
-		// take input and handle the cmd
-		cmdHandle(token, savedPath);
-		
+
+		if (strcmp(userInput, "\n") != 0) {
+			
+			//tokenize the input
+			tokenize(userInput, token);
+			
+			// DO NOT EDIT OR DELETE THIS LINE FOR NOW
+			printf("\n");
+			
+			aliasHandle(token, savedPath);
+				
+	 	}
 		
 	}
 	
@@ -144,7 +144,7 @@ void cmdHandle (char* tokens[50], char* path) {
 	
 	
 	//for loop to check which command
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 11; i++) {
 		if (strcmp(cmd, cmdList[i])==0) {
 			cmdID = i + 1;
 			break;
@@ -170,13 +170,12 @@ void cmdHandle (char* tokens[50], char* path) {
 			int posPosition  =  0;
 			
 			//prints an error if there's more than one parameter
-			if(para == NULL){
-				printf("-> You need to enter one argument");
-			}else if (tokens[2] != NULL) {
+			if (tokens[2] != NULL) {
 				printf("-> you can only enter one argument");
-			} else{
+			} else if (para == NULL) {
+				printf(" -> error! this command needs an argument");
+			} else {
 				posPosition = atoi(para);
-				printf("%d\n",posPosition);
 				historyHandle(posPosition, path);
 			}
 		break;
@@ -184,21 +183,25 @@ void cmdHandle (char* tokens[50], char* path) {
 		//excute the history command in negative 
 		case 3:;
 
-			
-		    int negPosition;
-        	negPosition = atoi(para);
 
-        	// uses counter + 1 so that the last command can be an option
-        	negPosition = ((counter + 1) - abs(negPosition));
+			if (para == NULL) {
+				printf(" -> error! this command needs an argument");
+			}
+			else {
+				
+				int negPosition;
+				negPosition = atoi(para);
 
-        	// prints an error if there's more than one parameter 
-            if(para == NULL){
-				printf("-> You need to enter one argument");
-			}else if (tokens[2] != NULL) {
-                 printf("-> you can only enter one argument");
-            } else {
-                historyHandle(negPosition, path); 
-            }
+				// uses counter + 1 so that the last command can be an option
+				negPosition = ((counter + 1) - abs(negPosition));
+
+				// prints an error if there's more than one parameter 
+		    		if (tokens[2] != NULL) {
+		         		printf("-> you can only enter one argument");
+		    		} else {
+		        		historyHandle(negPosition, path); 
+		    		}
+		    	}
 		break;
 		
 		//executes the previous history command (!!)
@@ -276,12 +279,26 @@ void cmdHandle (char* tokens[50], char* path) {
 		break;
 		
 		//alias (either show all aliases, or add a new alias
-		case 10:
-		
+		case 10:;
+
+            int oldCount =  aliasCount;
 			if (para == NULL) {
 				printAlias();
-			} else if (tokens[2]!= NULL) {
-				addAlias(para, **tokens);
+			} else if (tokens[2] != NULL) {
+				char addArray[512] = {0};
+				for (int i = 2; i < 20; i++) {
+					if (tokens[i] == NULL) {
+						break;
+					}
+				    strcat(strcat(addArray, " "), tokens[i]);
+				}
+				char* passArray = addArray;
+				passArray++;    
+				addAlias(para, passArray);
+                if(aliasCount>oldCount){
+                    printf("-> alias set");	
+                }
+                
 			} else {
 				printf("-> to use alias function, specify a name and command, or only use word \"alias\"\n");
 			}
@@ -290,15 +307,11 @@ void cmdHandle (char* tokens[50], char* path) {
 		
 		//unalias
 		case 11:
-		
 			if (para == NULL) {
-				printf("-> Please specify an existing alias name to remove it\n");
-			} else if (tokens[1] != NULL && tokens[2] == NULL) {
-				removeAlias();
-			} else if (tokens[2] != NULL) {
-				printf("-> You should only enter one alias name");
+				printf("-> Please specify an existing alias command to remove it\n");
+			} else {  
+				removeAlias(para);
 			}
-		
 		break;
 		
 		//if none of these cmd has been entered then process 
@@ -340,7 +353,7 @@ void prevHistoryHandle(char* path) {
 		//tokenises and executes the command
 		tokenize(historyArray[counter - 1].command,tInput);
 		printf("%s\n", tInput[0]);
-		cmdHandle(tInput,path);
+		aliasHandle(tInput,path);
 		
 		//makes sure the original command doesn't change in history and pushes the invoked command
 		strcpy(historyArray[(counter - 1)].command, inputCopy);
@@ -391,12 +404,7 @@ void historyHandle(int i, char* path) {
 		tokenize(historyArray[i - 1].command,tInput);
 		
 		//DO NOT DELETE THIS LINE CODE IS BASED ON THIS TO RUN
-		
-		
-		
-		//handle the tokenized input
-		cmdHandle(tInput,path);
-	
+		aliasHandle(tInput, path);
 		
 		//makes sure the original command doesn't change in history and pushes the invoked command
 		strcpy(historyArray[(i - 1)].command, inputCopy);
@@ -496,13 +504,13 @@ void currentPath() {
 
 void setPath(char** token) {
 
-	if(token[1] == NULL) {
+	if (token[1] == NULL) {
 		printf("-> path could not be set: no address");
-	}else if (token[2] != NULL) {
+	} else if (token[2] != NULL) {
 		printf("-> you can only enter one path");
-	}else if (setenv("PATH", token[1], 1) != 0) {
+	} else if (setenv("PATH", token[1], 1) != 0) {
 		printf("-> path could not be set: bad address");
-	}else{
+	} else {
 		currentPath();
 	}
 }
@@ -538,7 +546,6 @@ void loadHistory() {
     char commandStr[512]; 
     // doesn't run the rest of the method if the file cannot be found
     if (fptr == NULL) {
-		printf("-> The file does not exist History is empty.");
         return;
     }
     // loops for the maximum number of elements possible in historyArray
@@ -551,115 +558,166 @@ void loadHistory() {
     // closes the file
     fclose(fptr);
 }
-
-
 	
 //function to add a new alias
-void addAlias(char* name, char* command){
+void addAlias(char* newName, char newCommand[]) {
 
-		if (aliasCount == 10) {
-			printf("Max number of aliases reached, cannot add anymore");
-		} else {
-			int placePosition = -1;
-			for (int i = 0; i < 10; i++) {
-				if (aliases[i].name == name) {
-					placePosition = i;
-					printf("Alias command has been overriden");
-					break;
-				} else if (aliases[i].name == NULL && i < placePosition) {
-					placePosition = i;
+    int placePosition = -1;
+
+    if (aliasCount == 0) {
+        placePosition = 0;
+    } else {
+        for (int i = 0; i < aliasCount; i++) {
+            if (i == 9 && strcmp(aliases[i].name, newName) != 0) {
+            	printf("-> max number of aliases reached - cannot add any more");
+            	return;
+            } else if (strcmp(aliases[i].name, newName) == 0) {
+                strcpy(aliases[i].command, newCommand);
+                printf("-> alias command has been overriden");
+                return;
+            }
+                placePosition = aliasCount;
+        }
+    }    
+    if (placePosition > -1) {
+        aliases[placePosition].name = malloc(strlen(newName) + 1);
+        strcpy(aliases[placePosition].name, newName);	
+        aliases[placePosition].command = malloc(strlen(newCommand) + 1);
+        strcpy(aliases[placePosition].command, newCommand);		
+    	aliasCount++;
+    }
+}
+	
+//funtion to remove an aliased command from the list
+void removeAlias(char removeName[]){
+
+	int removed = 0;
+	for (int i = 0; i < aliasCount && removed == 0; i++) {
+		if (strcmp(aliases[i].name, removeName) == 0 && aliasCount == 1) {
+			aliases[i].name = NULL;
+			aliases[i].command = NULL;
+			removed = 1;
+		} else if (strcmp(aliases[i].name, removeName) == 0) {		
+			for (int j = i; j < aliasCount; j++) {
+				if (j == aliasCount - 1) {
+					aliases[j].name = NULL;
+					aliases[j].command = NULL;				
+				}
+				else {
+					strcpy(aliases[j].name, aliases[j+1].name);
+					strcpy(aliases[j].command, aliases[j+1].command);					
 				}
 			}
-			if (placePosition > -1) {
-				aliases[placePosition].name = malloc(strlen(name) + 1);
-				strcpy(aliases[placePosition].name, name);
-				aliases[placePosition].command = malloc(strlen(*command) + 1);
-				strcpy(aliases[placePosition].command, *command);
-			}
-		}	
-	}
-	
-	//funtion to remove an aliased command from the list
-	void removeAlias(char* name){
-		if (name == NULL) {
-			printf("-> input the name of the alias you are removing");
-		} else {
-			int removed = 0;
-			for (int i = 0; i < 10 && removed == 0; i++) {
-				aliases[i].name = NULL;
-				aliases[i].command = NULL;
-				removed = 1;
-				aliasCount -= 1;
-			}
-			if (removed == 0) {
-				printf("Alias %s does not exist.", name);
-			}
+			removed = 1;
+			break;			
 		}
 	}
 	
-	//Function to print all currently set aliases to the screen
-	void printAlias(){
-		//If there are no aliases set, display a message
-		if (aliasCount == 0) {
-			printf("There are no aliases set");
-		//Otherwise, loop through all the currently set aliases
-		} else {
-			//While set aliases are detected, print the alias name to the screen.
-			for (int i = 0; i < 10; i++) {
-				if (aliases[i].name != NULL) {
-					printf("%s\n", aliases[i].name);
-				}
+	if (removed == 0) {
+		printf("-> alias [%s] does not exist.", removeName);
+	} else {
+        aliasCount--;
+		printf("-> alias [%s] was removed.", removeName);
+	}
+}
+	
+//Function to print all currently set aliases to the screen
+void printAlias(){
+	//If there are no aliases set, display a message
+	if (aliasCount == 0) {
+		printf("-> There are no aliases set");
+	//Otherwise, loop through all the currently set aliases
+	} else {
+	//While set aliases are detected, print the alias name to the screen.
+		for (int i = 0; i < 10; i++) {
+			if (aliases[i].name != NULL) {
+				printf("-> alias %s = '%s'\n", aliases[i].name, aliases[i].command);
 			}
 		}
 	}
+}
 
-	void saveAlias(){
+//Function for looping through the tokens to check for instances of aliases
+void aliasHandle(char* tokens[50], char* path) {
 
-		//open .aliases to write.
-		FILE *fptr;
-		fptr = fopen(".aliases","w");
-
-		//do nothing if the file can't be found
-		if(fptr == NULL){
-			return;
+	char newInput[512] = {0};
+	int position = 0;
+	
+	for (int i = 0; i < aliasCount; i++) {
+		if (strcmp(tokens[0], aliases[i].name) == 0) {
+			strcpy(newInput, aliases[i].command);
+			position = 1;
+			break;
 		}
+	}
+	while (tokens[position] != NULL) {
+		strcat(strcat(newInput, " "), tokens[position]);
+		position++;
+	}
+	
+	tokenize(newInput, tokens);
+	
+	// take input and handle the cmd
+	cmdHandle(tokens, path);
+}
+
+void saveAlias(){
+
+	//open .aliases to write.
+	FILE *fptr;
+    	fptr = fopen(".aliases","w");
+
+	//do nothing if the file can't be found
+	if(fptr == NULL){
+		return;
+	}
 		
-		for (int i = 0; i < 10; i++){
-            if(aliases[i].name == NULL && aliases[i].command == NULL){
-                break;
-            }
-            fputs(aliases[i].name, fptr);
-			fputs(aliases[i].command, fptr);
-		}
-		fclose(fptr);
+	for (int i = 0; i < 10; i++){
+        if(aliases[i].name == NULL && aliases[i].command == NULL){
+            break;
+        }
+        fprintf(fptr,"%s %s\n", aliases[i].name, aliases[i].command);
 	}
+	fclose(fptr);
+}
 
-    void loadAlias(){
+void loadAlias(){
 
-        FILE *fptr;
-        fptr =  fopen(".aliases","r");
-
-        char nameStr[512];
-        char aliasStr[512];
-        char paraStr[512];
-
-        if (fptr == NULL) {
-		    printf("-> The file does not exist History is empty.");
-        return;
-        }
-
-        for(int i = 0; i < 10; i++){
-            if(fgets(nameStr,512, fptr)!= NULL && fgets(aliasStr,512, fptr)!= NULL){
-                
-                addAlias(nameStr,aliasStr,);
-            }
-        }
-
-       // <aliasname> <command any para for command>
-       // <1> <ls -if>
-       
-
-        fclose(fptr);
+    FILE *fptr;
+    fptr =  fopen(".aliases","r");  
+    char wholeStr[512];
+    char* tokens[50];  
     
 
+
+    if (fptr == NULL) {
+	    printf("-> The file does not exist History is empty.");
+        return;
     }
+
+    for(int i = 0; i < 10; i++){
+        char aliasStr[512] = {0};
+
+        if(fgets(wholeStr,512,fptr)!= NULL){
+            
+            tokenize(wholeStr,tokens);
+            
+            for(int i = 1; i < 20; i++){
+                if(tokens[i]==NULL){
+                    break;
+                } 
+                strcat(strcat(aliasStr," "), tokens[i]);
+            }
+
+            char* passArray = aliasStr;
+            passArray++;
+
+            addAlias(tokens[0],passArray);
+            
+           
+        }
+    
+    }
+
+    fclose(fptr);
+}
