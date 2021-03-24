@@ -313,7 +313,7 @@ void cmdHandle (char* tokens[50], char* path) {
 				}                
 			//if there's only one parameter an error is printed
 			} else {
-				printf("-> to use alias function, specify a name and command, or only use word \"alias\"\n");
+				printf("-> error! there is only one parameter. use alias <name> <command>\n");
 			}
 
 		break;
@@ -503,12 +503,12 @@ void tokenize(char* input, char* arrToken[50]) {
 	int i = 0;
 
 	//tokenises the input based on delimiters
-	arrToken[0] = strtok(input, " \t,><&;\n|");
+	arrToken[0] = strtok(input, " \t><&;\n|");
 
 	//loops until it reaches the end of the string
 	while(arrToken[i] != NULL){
 		i++;
-		arrToken[i] = strtok(NULL, " \t,><&;\n|");
+		arrToken[i] = strtok(NULL, " \t><&;\n|");
 	}
 }
 
@@ -739,9 +739,10 @@ void loadAlias() {
 		if (fgets(wholeStr, 512, fptr) != NULL) {
 			tokenize(wholeStr,tokens);
 			//concatenates a string until there is nothing left 
-			if (tokens[1] != NULL) {
-				for(int i = 1; i < 20; i++){
+			if (tokens[1] != NULL && tokens[0] != NULL) {
+				for(int i = 1; i < 20; i++) {
 					if(tokens[i] == NULL) {
+					
 						break;
 					}
 					//concatenates with an additional space
