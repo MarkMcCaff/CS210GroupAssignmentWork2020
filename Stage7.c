@@ -58,20 +58,20 @@ int main(void) {
 	chdir(getenv("HOME"));
 
 	// tries to load the previously saved history
-    loadHistory();
+        loadHistory();
 	
 	// prompt init message
 	printf("Welcome to CS210 Group Shell Project \n");
 	
-	// pronpt loop while true until exit exit(0)
+	// prompt loop while true until exit exit(0)
 	while (1){
 	
-		// take input
-		
+		// take input	
 		input(userInput, savedPath);
 		
 		//tokenize the input
 		tokenize(userInput, token);
+		
 		// DO NOT EDIT OR DELETE THIS LINE FOR NOW
 		printf("\n");
 		
@@ -163,9 +163,10 @@ void cmdHandle (char* tokens[50], char* path) {
 			//prints an error if there's more than one parameter
 			if (tokens[2] != NULL) {
 				printf("-> you can only enter one argument");
+			} else if (para == NULL) {
+				printf(" -> error! this command needs an argument");
 			} else {
 				posPosition = atoi(para);
-				printf("%d\n",posPosition);
 				historyHandle(posPosition, path);
 			}
 		break;
@@ -173,19 +174,25 @@ void cmdHandle (char* tokens[50], char* path) {
 		//excute the history command in negative 
 		case 3:;
 
-			
-		    int negPosition;
-        	negPosition = atoi(para);
 
-        	// uses counter + 1 so that the last command can be an option
-        	negPosition = ((counter + 1) - abs(negPosition));
+			if (para == NULL) {
+				printf(" -> error! this command needs an argument");
+			}
+			else {
+				
+				int negPosition;
+				negPosition = atoi(para);
 
-        	// prints an error if there's more than one parameter 
-            if (tokens[2] != NULL) {
-                 printf("-> you can only enter one argument");
-            } else {
-                historyHandle(negPosition, path); 
-            }
+				// uses counter + 1 so that the last command can be an option
+				negPosition = ((counter + 1) - abs(negPosition));
+
+				// prints an error if there's more than one parameter 
+		    		if (tokens[2] != NULL) {
+		         		printf("-> you can only enter one argument");
+		    		} else {
+		        		historyHandle(negPosition, path); 
+		    		}
+		    	}
 		break;
 		
 		//executes the previous history command (!!)
@@ -546,13 +553,14 @@ void addAlias(char* newName, char newCommand[]) {
 
     int placePosition = -1;
 
-    if (aliasCount == 10) {
-	printf("-> max number of aliases reached, cannot add anymore");
-    } else if (aliasCount == 0) {
+    if (aliasCount == 0) {
         placePosition = 0;
     } else {
         for (int i = 0; i < aliasCount; i++) {
-            if (strcmp(aliases[i].name, newName) == 0) {
+            if (i == 9 && strcmp(aliases[i].name, newName) != 0) {
+            	printf("max number of aliases reached - cannot add any more");
+            	return;
+            } else if (strcmp(aliases[i].name, newName) == 0) {
                 strcpy(aliases[i].command, newCommand);
                 printf("alias command has been overriden");
                 return;
