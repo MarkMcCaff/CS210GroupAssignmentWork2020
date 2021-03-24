@@ -45,6 +45,8 @@ void loadHistory();
 void addAlias();
 void removeAlias();
 void printAlias();
+void saveAlias();
+void loadAlias();
 
 
 int main(void) {
@@ -60,6 +62,9 @@ int main(void) {
 
 	// tries to load the previously saved history
     loadHistory();
+
+    //tries to load the saved aliases into array aliases
+    loadAlias();
 	
 	// prompt init message
 	printf("Welcome to CS210 Group Shell Project \n");
@@ -155,6 +160,7 @@ void cmdHandle (char* tokens[50], char* path) {
 			currentPath();
 			printf("-> exit shell \n");
 			saveHistory();
+            saveAlias();
 			exit(0);
 		break;
 		
@@ -455,6 +461,7 @@ void input(char input[512], char* path){
 		currentPath();
 		printf("\n-> exit shell \n");
 		saveHistory();
+        saveAlias();
 		exit(0);
 		
 	//Will break when u type "exit"
@@ -548,7 +555,8 @@ void loadHistory() {
 
 	
 //function to add a new alias
-void addAlias(char* name, char** command){
+void addAlias(char* name, char* command){
+
 		if (aliasCount == 10) {
 			printf("Max number of aliases reached, cannot add anymore");
 		} else {
@@ -604,3 +612,54 @@ void addAlias(char* name, char** command){
 			}
 		}
 	}
+
+	void saveAlias(){
+
+		//open .aliases to write.
+		FILE *fptr;
+		fptr = fopen(".aliases","w");
+
+		//do nothing if the file can't be found
+		if(fptr == NULL){
+			return;
+		}
+		
+		for (int i = 0; i < 10; i++){
+            if(aliases[i].name == NULL && aliases[i].command == NULL){
+                break;
+            }
+            fputs(aliases[i].name, fptr);
+			fputs(aliases[i].command, fptr);
+		}
+		fclose(fptr);
+	}
+
+    void loadAlias(){
+
+        FILE *fptr;
+        fptr =  fopen(".aliases","r");
+
+        char nameStr[512];
+        char aliasStr[512];
+        char paraStr[512];
+
+        if (fptr == NULL) {
+		    printf("-> The file does not exist History is empty.");
+        return;
+        }
+
+        for(int i = 0; i < 10; i++){
+            if(fgets(nameStr,512, fptr)!= NULL && fgets(aliasStr,512, fptr)!= NULL){
+                
+                addAlias(nameStr,aliasStr,);
+            }
+        }
+
+       // <aliasname> <command any para for command>
+       // <1> <ls -if>
+       
+
+        fclose(fptr);
+    
+
+    }
