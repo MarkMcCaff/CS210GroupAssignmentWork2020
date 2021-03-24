@@ -68,14 +68,18 @@ int main(void) {
 	
 		// take input	
 		input(userInput, savedPath);
-		
-		//tokenize the input
-		tokenize(userInput, token);
-		
-		// DO NOT EDIT OR DELETE THIS LINE FOR NOW
-		printf("\n");
-		
-	        aliasHandle(token, savedPath);
+
+		if (strcmp(userInput, "\n") != 0) {
+			
+			//tokenize the input
+			tokenize(userInput, token);
+			
+			// DO NOT EDIT OR DELETE THIS LINE FOR NOW
+			printf("\n");
+			
+			aliasHandle(token, savedPath);
+				
+	 	}
 		
 	}
 	
@@ -338,7 +342,7 @@ void prevHistoryHandle(char* path) {
 		//tokenises and executes the command
 		tokenize(historyArray[counter - 1].command,tInput);
 		printf("%s\n", tInput[0]);
-		cmdHandle(tInput,path);
+		aliasHandle(tInput,path);
 		
 		//makes sure the original command doesn't change in history and pushes the invoked command
 		strcpy(historyArray[(counter - 1)].command, inputCopy);
@@ -389,12 +393,7 @@ void historyHandle(int i, char* path) {
 		tokenize(historyArray[i - 1].command,tInput);
 		
 		//DO NOT DELETE THIS LINE CODE IS BASED ON THIS TO RUN
-		
-		
-		
-		//handle the tokenized input
-		cmdHandle(tInput,path);
-	
+		aliasHandle(tInput, path);
 		
 		//makes sure the original command doesn't change in history and pushes the invoked command
 		strcpy(historyArray[(i - 1)].command, inputCopy);
@@ -596,10 +595,10 @@ void removeAlias(char removeName[]){
 				}
 				else {
 					strcpy(aliases[j].name, aliases[j+1].name);
-					strcpy(aliases[j].command, aliases[j+1].command);
-					removed = 1;
+					strcpy(aliases[j].command, aliases[j+1].command);					
 				}
 			}
+			removed = 1;
 			break;			
 		}
 	}
@@ -629,8 +628,10 @@ void printAlias(){
 
 //Function for looping through the tokens to check for instances of aliases
 void aliasHandle(char* tokens[50], char* path) {
+
 	char newInput[512] = {0};
 	int position = 0;
+	
 	for (int i = 0; i < aliasCount; i++) {
 		if (strcmp(tokens[0], aliases[i].name) == 0) {
 			strcpy(newInput, aliases[i].command);
@@ -642,7 +643,7 @@ void aliasHandle(char* tokens[50], char* path) {
 		strcat(strcat(newInput, " "), tokens[position]);
 		position++;
 	}
-
+	
 	tokenize(newInput, tokens);
 	
 	// take input and handle the cmd
