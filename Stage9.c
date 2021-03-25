@@ -47,6 +47,7 @@ void printAlias();
 void aliasHandle();
 void saveAlias();
 void loadAlias();
+void checkValidity();
 
 
 int main(void) {
@@ -85,14 +86,7 @@ int main(void) {
 
 			aliasHandle(token, savedPath);
 
-			if (valid == 0) {
-				// take input and handle the cmd
-				cmdHandle(token, savedPath);		
-	 		} else {
-	 			printf(" -> error! reached maximum number of substitutions");
-	 			valid = 0;
-	 		}
-	 		subCount = 0;
+			checkValidity();
 	 	}
 	}
 	
@@ -371,14 +365,7 @@ void prevHistoryHandle(char* path) {
 		tokenize(historyArray[counter - 1].command,tInput);
 		printf("%s\n", tInput[0]);
 		aliasHandle(tInput,path);
-			if (valid == 0) {
-				// take input and handle the cmd
-				cmdHandle(tInput, path);		
-	 		} else {
-	 			printf(" -> error! reached maximum number of substitutions");
-	 			valid = 0;
-	 		}
-	 		subCount = 0;
+		checkValidity();
 		//makes sure the original command doesn't change in history and pushes the invoked command
 		strcpy(historyArray[(counter - 1)].command, inputCopy);
 	} else {
@@ -429,14 +416,7 @@ void historyHandle(int i, char* path) {
 			tokenize(historyArray[i - 1].command,tInput);
 			//handles any aliases
 			aliasHandle(tInput, path);
-			if (valid == 0) {
-				// take input and handle the cmd
-				cmdHandle(tInput, path);		
-	 			printf(" -> error! reached maximum number of substitutions");
-	 		} else {
-	 			valid = 0;
-	 		}
-	 		subCount = 0;
+			checkValidity();
 			//makes sure the original command doesn't change in history and pushes the invoked command
 			strcpy(historyArray[(i - 1)].command, inputCopy);
 		//prints an error if there's no command stores at the specified location
@@ -687,40 +667,55 @@ void printAlias(){
 //Function for looping through the tokens to check for instances of aliases
 void aliasHandle(char* tokens[50], char* path) {
 
+	//creates local variables for checking aliases
 	char newInput[512] = {0};
 	int position = 0;
 	int changed;
 	
+	
+	//doesn't go through the substitution process if it's a call to either alias or unalias 
 	if((strcmp(tokens[0], "unalias") == 0) || strcmp(tokens[0], "alias") == 0) {
 		return;
 	}
 	
+	//while the token isn't null, initiates changed to 0
 	while (tokens[position] != NULL) {
 		changed = 0;
+		//loops for number of aliases
 		for (int i = 0; i < aliasCount; i++) {
+			//if the token is equal to an alias name, a the command is substituted
 			if (strcmp(tokens[position], aliases[i].name) == 0) {
 				strcat(strcat(newInput, " "), aliases[i].command);
 				changed = 1;
 			}
 		}
+		//takes just the token into account if there is no matching alias
 		if (changed == 0) {
 			strcat(strcat(newInput, " "), tokens[position]);
 		}
+		//increments position for the loop
 		position++;
 	}
+	//increments subCount whihc referd to the number of substiturtions made
 	subCount++;
+	//resets position
 	position = 0;
+	//tokenises the new input
 	tokenize(newInput, tokens);
 
+	//looks for another opportunity to substitute if subCount is under 3
 	if (subCount < 3) {
 		while (tokens[position] != NULL) {
 			for (int i = 0; i < aliasCount; i++) {
+				//if there's still an alias name present it calls aliasHandle() again
 				if (strcmp(tokens[position], aliases[i].name) == 0) {
 					aliasHandle(tokens, path);
 				}
 			}
+			//increments position for the loop
 			position++;
 		}
+	//otherwise if subCount does equal 0l it changes valid and aborts the method
 	} else {
 		valid = 1;
 		return;
@@ -787,4 +782,18 @@ void loadAlias() {
 	}
 	//closes the file
 	fclose(fptr);
+}
+
+void checkValidity() {
+	//if the command is valid (i.e. has no more aliases) it runs cmdHandle
+	if (valid == 0) {
+		// takes the input and handles the cmd
+		cmdHandle(token, savedPath);	
+	//otherwise it prints an error and resets the valid variable	
+	 } else {
+	 	printf(" -> error! reached maximum number of substitutions");
+	 	valid = 0;
+	 }
+	 //resets the number of substitutions made
+	 subCount = 0;
 }
