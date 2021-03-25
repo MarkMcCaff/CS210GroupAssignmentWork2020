@@ -23,6 +23,8 @@ int counter = 0;
 struct history historyArray[20];
 int aliasCount = 0;
 struct alias aliases[10];
+int numberOfExecutions = 0;
+
 
 void currentDir();
 void cmdHandle();
@@ -106,7 +108,7 @@ void currentDir() {
 
 //the tokenised input
 void cmdHandle (char* tokens[50], char* path) {
-
+	
 	char* cmd = tokens[0];
 	int cmdID = 0;
 	char* para = tokens[1];
@@ -160,6 +162,7 @@ void cmdHandle (char* tokens[50], char* path) {
 			setenv("PATH", path, 1);
 			currentPath();
 			printf("-> exit shell \n");
+
 			exit(0);
 		break;
 		
@@ -211,7 +214,15 @@ void cmdHandle (char* tokens[50], char* path) {
 			if(para != NULL) {
 				printf("-> error! this command cannot take any arguments");
 			} else {
+			       numberOfExecutions++;
+				if(numberOfExecutions == 3){
+				printf("%s", "Error, You can only run this 3 times");
+				numberOfExecutions = 0;
+				break;;
+				}
 				prevHistoryHandle(path);
+				
+				
 			}
 		break;
 
@@ -492,21 +503,8 @@ void input(char input[512], char* path) {
 
 	//doesn't add to the history if it's either an invocation, calling history, or just 'enter' is pressed
 	
-	int ihateC = 0;
-	for(int i = 0; i<aliasCount; i++){
-	//printf("%s\n",input);
-	//printf("%s\n",aliases[i].name);
-	//printf("%s\n",aliases[i].command);
-	if(strcmp(aliases[i].name,input) == 0){
-		if(strcmp(aliases[i].command,"!!") == 0){
-			ihateC = 1;
-			break;
-		}
-	}
-	}
 	
-	
-	if(ihateC == 0 && (strchr(input, '!') == NULL) && (strcmp(input, "history\n") != 0) && (strcmp(input, "\n") != 0)) {
+	if((strchr(input, '!') == NULL) && (strcmp(input, "history\n") != 0) && (strcmp(input, "\n") != 0)) {
 	
 	
 		
