@@ -86,7 +86,7 @@ int main(void) {
 
 			aliasHandle(token, savedPath);
 
-			checkValidity();
+			checkValidity(token, savedPath);
 	 	}
 	}
 	
@@ -784,11 +784,11 @@ void loadAlias() {
 	fclose(fptr);
 }
 
-void checkValidity() {
+void checkValidity(char* token[], char* path) {
 	//if the command is valid (i.e. has no more aliases) it runs cmdHandle
 	if (valid == 0) {
 		// takes the input and handles the cmd
-		cmdHandle(token, savedPath);	
+		cmdHandle(token, path);	
 	//otherwise it prints an error and resets the valid variable	
 	 } else {
 	 	printf(" -> error! reached maximum number of substitutions");
