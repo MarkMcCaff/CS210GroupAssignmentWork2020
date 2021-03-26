@@ -191,7 +191,7 @@ void cmdHandle (char* tokens[50], char* path) {
 				printf("-> you can only enter one argument");
 			//prints an error if there's no parameters 
 			} else if (para == NULL) {
-				printf(" -> error! this command needs an argument");
+				printf("-> error! this command needs an argument");
 			//otherwise turns the parameter into an integer for the historyHandle method
 			} else {
 				posPosition = atoi(para);
@@ -204,7 +204,7 @@ void cmdHandle (char* tokens[50], char* path) {
 
 			//prints an error if there's no parameters
 			if (para == NULL) {
-				printf(" -> error! this command needs an argument");
+				printf("-> error! this command needs an argument");
 			} else {
 				
 				//turns the parameter into an integer	
@@ -737,7 +737,7 @@ void aliasHandle(char* tokens[50], char* path) {
 	if(executionCount <= 3) {
 		cmdHandle(tokens, path);
 	} else {
-		printf("%s", "maximum number of executions reached");
+		printf("-> error! maximum number of executions reached - check for infinite loops");
 		executionCount = 0;
 	}
 	
