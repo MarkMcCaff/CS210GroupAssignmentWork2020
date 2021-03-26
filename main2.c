@@ -1,20 +1,13 @@
 //Group 8 - Jackson Blair, Mark McCaffetary, Scott Love, Suleman Ahkter, Nuoxu Li
 
-//Implement functions for input and output
+//Include function libraries are needed for commands to execute processes
 #include <stdio.h>
-//Implement functions involving strings 
 #include <string.h>
-//Implement functions
 #include <unistd.h>
-//Implement functions
 #include <limits.h>
-//Implement functions
 #include <stdlib.h>
-//Implement functions
 #include <signal.h>
-//Implement functions
 #include <sys/types.h>
-//Implement functions
 #include <sys/wait.h>
 
 //Create a structure storing a history 
